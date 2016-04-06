@@ -735,6 +735,168 @@ if [ "${HAVE_LIBCOMPAT}" = "1" ];then
     checkfail "ndk-build compat failed"
 fi
 
+#################
+# MEDIALIBRARY #
+################
+
+PROJECTPATH=`pwd`
+
+if [ ! -d "${PROJECTPATH}/medialibrary" ]; then
+    mkdir "${PROJECTPATH}/medialibrary"
+fi
+
+##########
+# SQLITE #
+##########
+
+MEDIALIBRARY_MODULE_DIR=${PROJECTPATH}/medialibrary
+MEDIALIBRARY_BUILD_DIR=${MEDIALIBRARY_MODULE_DIR}/medialibrary
+MEDIALIBRARY_LIB_DIR=$MEDIALIBRARY_MODULE_DIR/.libs/${ANDROID_ABI}
+OUT_LIB_DIR=$MEDIALIBRARY_MODULE_DIR/jni/libs/${ANDROID_ABI}
+SQLITE_RELEASE="sqlite-autoconf-3120200"
+
+if [ ! -d "${MEDIALIBRARY_MODULE_DIR}/${SQLITE_RELEASE}" ]; then
+    echo -e "\e[1m\e[32msqlite source not found, downloading\e[0m"
+    cd ${MEDIALIBRARY_MODULE_DIR}
+    wget https://www.sqlite.org/2016/${SQLITE_RELEASE}.tar.gz
+    tar -xzf ${SQLITE_RELEASE}.tar.gz
+fi
+    cd ${MEDIALIBRARY_MODULE_DIR}/${SQLITE_RELEASE}
+    if [ ! -d build ]; then
+        mkdir build;
+    fi;
+    cd build;
+    ../bootstrap
+    ../configure \
+      --host=$TARGET_TUPLE \
+      CPPFLAGS="$CPPFLAGS" \
+      CFLAGS="$CFLAGS ${EXTRA_CFLAGS} --sysroot=${SYSROOT} $COMMON_INC" \
+      CXXFLAGS="$CFLAGS ${EXTRA_CXXFLAGS} -pthread --sysroot=${SYSROOT}" \
+      LDFLAGS="$LDFLAGS $EXTRA_LDFLAGS" \
+      CC="${CROSS_COMPILE}gcc -fPIC --sysroot=${SYSROOT}" \
+      CXX="${CROSS_COMPILE}g++ -fPIC --sysroot=${SYSROOT} -D__cpp_static_assert=200410"
+
+    make $MAKEFLAGS
+
+    cd ${PROJECTPATH}
+    checkfail "sqlite build failed"
+
+##############################
+# FETCH MEDIALIBRARY SOURCES #
+##############################
+
+if [ ! -d "${MEDIALIBRARY_MODULE_DIR}/medialibrary" ]; then
+    echo -e "\e[1m\e[32mmedialibrary source not found, cloning\e[0m"
+    git clone http://code.videolan.org/videolan/medialibrary.git "${PROJECTPATH}/medialibrary/medialibrary"
+    checkfail "medialibrary source: git clone failed"
+fi
+
+if [ ! -d "${MEDIALIBRARY_MODULE_DIR}/libvlcpp" ]; then
+    echo -e "\e[1m\e[32mlibvlcpp source not found, cloning\e[0m"
+    git clone http://code.videolan.org/videolan/libvlcpp.git "${MEDIALIBRARY_MODULE_DIR}/libvlcpp"
+    checkfail "libvlcpp source: git clone failed"
+fi
+
+echo -e "\e[1m\e[36mCFLAGS:            ${CFLAGS}\e[0m"
+echo -e "\e[1m\e[36mEXTRA_CFLAGS:      ${EXTRA_CFLAGS}\e[0m"
+
+#################
+# Setup folders #
+#################
+
+
+#############
+# CONFIGURE #
+#############
+
+cd ${MEDIALIBRARY_BUILD_DIR}
+
+sed "s#@prefix@#${MEDIALIBRARY_MODULE_DIR}/libvlcpp#g" $PROJECTPATH/pkgs/libvlcpp.pc.in > \
+    $PROJECTPATH/pkgs/libvlcpp.pc;
+sed "s#@libdir@#$PROJECTPATH/libvlc/jni/libs/$ANDROID_ABI#g" $PROJECTPATH/pkgs/libvlc.pc.in > \
+    $PROJECTPATH/pkgs/libvlc.pc;
+sed -i "s#@includedirs@#-I${PROJECTPATH}/vlc/include \
+-I${PROJECTPATH}/vlc/build-android-$TARGET_TUPLE/include#g" $PROJECTPATH/pkgs/libvlc.pc;
+
+if [ ! -d build-android ]; then
+    mkdir build-android;
+fi;
+cd build-android;
+
+../bootstrap
+../configure \
+    --host=$TARGET_TUPLE \
+    CPPFLAGS="$CPPFLAGS" \
+    CFLAGS="$CFLAGS ${EXTRA_CFLAGS} --sysroot=${SYSROOT} $COMMON_INC" \
+    CXXFLAGS="$CFLAGS ${EXTRA_CXXFLAGS} -pthread --sysroot=${SYSROOT}" \
+    LDFLAGS="$LDFLAGS $EXTRA_LDFLAGS" \
+    CC="${CROSS_COMPILE}gcc -fPIC --sysroot=${SYSROOT}" \
+    CXX="${CROSS_COMPILE}g++ -fPIC --sysroot=${SYSROOT} -D__cpp_static_assert=200410" \
+    NM="${CROSS_COMPILE}nm" \
+    STRIP="${CROSS_COMPILE}strip" \
+    RANLIB="${CROSS_COMPILE}ranlib" \
+    PKG_CONFIG_LIBDIR="$PROJECTPATH/pkgs/" \
+    LIBJPEG_LIBS="-L$PROJECTPATH/vlc/contrib/contrib-android-$TARGET_TUPLE/jpeg/.libs -ljpeg" \
+    LIBJPEG_CFLAGS="-I$PROJECTPATH/vlc/contrib/$TARGET_TUPLE/include/" \
+    SQLITE_LIBS="-L$MEDIALIBRARY_MODULE_DIR/$SQLITE_RELEASE/build/.libs -lsqlite3" \
+    SQLITE_CFLAGS="-I$MEDIALIBRARY_MODULE_DIR/$SQLITE_RELEASE" \
+    AR="${CROSS_COMPILE}ar"
+checkfail "medialibrary: autoconf failed"
+
+
+############
+# BUILDING #
+############
+
+echo -e "\e[1m\e[32mBuilding medialibrary\e[0m"
+make $MAKEFLAGS
+
+checkfail "medialibrary: make failed"
+
+if [ ! -d $MEDIALIBRARY_LIB_DIR ]; then
+    mkdir -p $MEDIALIBRARY_LIB_DIR
+fi
+cp -a ${MEDIALIBRARY_MODULE_DIR}/${SQLITE_RELEASE}/build/.libs/libsqlite3.so ${MEDIALIBRARY_LIB_DIR}
+cp -a ${MEDIALIBRARY_BUILD_DIR}/build-android/.libs/libmedialibrary.so ${MEDIALIBRARY_LIB_DIR}/libmedialibrary.so
+
+cd ${PROJECTPATH}
+
+echo -e "ndk-build medialibrary"
+
+$ANDROID_NDK/ndk-build -C medialibrary \
+    ANDROID_SYS_HEADERS="$ANDROID_SYS_HEADERS" \
+    TARGET_CFLAGS="$EXTRA_CFLAGS -std=c++11" \
+    EXTRA_LDFLAGS="$EXTRA_LDFLAGS" \
+    APP_BUILD_SCRIPT=jni/Android.mk \
+    APP_PLATFORM=${ANDROID_API} \
+    APP_ABI=${ANDROID_ABI} \
+    APP_STL="gnustl_static" \
+    LOCAL_CPP_FEATURES="exceptions" \
+    SYSROOT=${SYSROOT} \
+    TARGET_TUPLE=$TARGET_TUPLE \
+    NDK_PROJECT_PATH=jni \
+    NDK_TOOLCHAIN_VERSION=${GCCVER} \
+    NDK_DEBUG=${NDK_DEBUG} \
+    OUT_LIB_DIR=${MEDIALIBRARY_LIB_DIR} \
+    MEDIALIBRARY_INCLUDE_DIR=${MEDIALIBRARY_BUILD_DIR}/include \
+    SQLITE3_DIR=${MEDIALIBRARY_MODULE_DIR}/${SQLITE_RELEASE}/build/.libs
+
+checkfail "ndk-build failed"
+
+cd ${PROJECTPATH}
+
+if [ ! -d $OUT_LIB_DIR ]; then
+    mkdir -p $OUT_LIB_DIR
+fi
+
+cp -a ${MEDIALIBRARY_LIB_DIR}/*.so ${OUT_LIB_DIR}
+
+if [ "$RELEASE" = 1 ]; then
+    echo -e "\e[1m\e[32mStripping\e[0m"
+    ${CROSS_COMPILE}strip ${OUT_LIB_DIR}/*.so
+    checkfail "stripping"
+fi
+
 VERSION=$(grep "android:versionName" vlc-android/AndroidManifest.xml|cut -d\" -f 2)
 OUT_DBG_DIR=.dbg/${ANDROID_ABI}/$VERSION
 
