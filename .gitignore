@@ -2,6 +2,9 @@
 /vlc/
 /toolchains/
 
+#medialibrary
+medialibrary/
+
 # Android .so
 /android-libs/**/*.so
 .modules/
