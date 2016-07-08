@@ -2,11 +2,11 @@ package org.videolan.medialibrary;
 
 public class Medialibrary {
 
-    public Medialibrary() {
+
+static {
         System.loadLibrary("sqlite3");
         System.loadLibrary("medialibrary");
         System.loadLibrary("mla");
-    }
-
-    public native String stringFromJNI();
+}
+    public native String nativeInit();
 }
