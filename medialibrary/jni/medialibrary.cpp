@@ -1,29 +1,61 @@
 #include <stdlib.h>
 #include <jni.h>
 #include <medialibrary/IMediaLibrary.h>
+#define LOG_TAG "VLC/JNI/MediaLibrary"
+#include "log.h"
+#include "utils.h"
 
 #define VLC_JNI_VERSION JNI_VERSION_1_2
 
 static JavaVM *myVm;
-static const char *classPathName = "org/videolan/medialibrary/Medialibrary";
+fields ml_fields;
+#define CLASSPATHNAME "org/videolan/medialibrary/Medialibrary"
 
-jstring
+
+static inline void throw_IllegalStateException(JNIEnv *env, const char *p_error)
+{
+    env->ThrowNew(ml_fields.IllegalStateException.clazz, p_error);
+}
+
+static inline void throw_IllegalArgumentException(JNIEnv *env, const char *p_error)
+{
+    env->ThrowNew(ml_fields.IllegalArgumentException.clazz, p_error);
+}
+
+static medialibrary::IMediaLibrary *
+MediaLibrary_getInstanceInternal(JNIEnv *env, jobject thiz)
+{
+    return (medialibrary::IMediaLibrary*)(intptr_t) env->GetLongField(thiz,
+                                                ml_fields.MediaLibrary.instanceID);
+}
+medialibrary::IMediaLibrary *
+MediaLibrary_getInstance(JNIEnv *env, jobject thiz)
+{
+    medialibrary::IMediaLibrary *p_obj = MediaLibrary_getInstanceInternal(env, thiz);
+    if (!p_obj)
+        throw_IllegalStateException(env, "can't get VLCObject instance");
+    return p_obj;
+}
+
+
+static void
+MediaLibrary_setInstance(JNIEnv *env, jobject thiz, medialibrary::IMediaLibrary *p_obj)
+{
+    env->SetLongField(thiz,
+                         ml_fields.MediaLibrary.instanceID,
+                         (jlong)(intptr_t)p_obj);
+}
+
+void
 init(JNIEnv* env, jobject thiz )
 {
     medialibrary::IMediaLibrary* ml = NewMediaLibrary();
-    return env->NewStringUTF("ml instanciated");
+    MediaLibrary_setInstance(env, thiz, ml);
 }
 
 static JNINativeMethod methods[] = {
   {"nativeInit", "()Ljava/lang/String;", (void*)init },
 };
-
-/*jstring
-Java_org_videolan_medialibrary_Medialibrary_stringFromJNI( JNIEnv* env,
-                                                  jobject thiz )
-{
-    return (*env)->NewStringUTF("Hello VLC from JNI !");
-}*/
 
 jint JNI_OnLoad(JavaVM *vm, void *reserved)
 {
@@ -34,45 +66,58 @@ jint JNI_OnLoad(JavaVM *vm, void *reserved)
     if (vm->GetEnv((void**) &env, VLC_JNI_VERSION) != JNI_OK)
         return -1;
 
-    jclass clazz;
-    clazz = env->FindClass(classPathName);
-    if (clazz == NULL) {
-        //ALOGE("Native registration unable to find class '%s'", className);
-        return -1;
-    }
-    if (env->RegisterNatives(clazz, methods, sizeof(methods) / sizeof(methods[0])) < 0) {
-        //ALOGE("RegisterNatives failed for '%s'", className);
+#define GET_CLASS(clazz, str, b_globlal) do { \
+    (clazz) = env->FindClass((str)); \
+    if (!(clazz)) { \
+        LOGE("FindClass(%s) failed", (str)); \
+        return -1; \
+    } \
+    if (b_globlal) { \
+        (clazz) = (jclass) env->NewGlobalRef((clazz)); \
+        if (!(clazz)) { \
+            LOGE("NewGlobalRef(%s) failed", (str)); \
+            return -1; \
+        } \
+    } \
+} while (0)
+
+#define GET_ID(get, id, clazz, str, args) do { \
+    (id) = env->get((clazz), (str), (args)); \
+    if (!(id)) { \
+        LOGE(#get"(%s) failed", (str)); \
+        return -1; \
+    } \
+} while (0)
+
+    GET_CLASS(ml_fields.IllegalStateException.clazz,
+              "java/lang/IllegalStateException", true);
+    GET_CLASS(ml_fields.IllegalArgumentException.clazz,
+              "java/lang/IllegalArgumentException", true);
+
+    GET_CLASS(ml_fields.MediaLibrary.clazz, CLASSPATHNAME, true);
+    if (env->RegisterNatives(ml_fields.MediaLibrary.clazz, methods, sizeof(methods) / sizeof(methods[0])) < 0) {
+        LOGE("RegisterNatives failed for '%s'", CLASSPATHNAME);
         return -1;
     }
 
-    //LOGD("JNI interface loaded.");
+    GET_ID(GetFieldID,
+           ml_fields.MediaLibrary.instanceID,
+           ml_fields.MediaLibrary.clazz,
+           "mInstanceID", "J");
+
+#undef GET_CLASS
+#undef GET_ID
+
+    LOGD("JNI interface loaded.");
     return VLC_JNI_VERSION;
 }
 
-/*
- * Utils
- */
-/*static IMediaLibrary *
-VLCJniObject_getInstanceInternal(JNIEnv *env, jobject thiz)
+void JNI_OnUnload(JavaVM* vm, void* reserved)
 {
-    return (vlcjni_object*)(intptr_t) (*env)->GetLongField(env, thiz,
-                                                fields.VLCObject.mInstanceID);
+    JNIEnv* env = NULL;
+
+    if (vm->GetEnv((void**) &env, VLC_JNI_VERSION) != JNI_OK)
+        return;
+
+    env->DeleteGlobalRef(ml_fields.MediaLibrary.clazz);
 }
-
-vlcjni_object *
-VLCJniObject_getInstance(JNIEnv *env, jobject thiz)
-{
-    IMediaLibrary *p_obj = VLCJniObject_getInstanceInternal(env, thiz);
-    if (!p_obj)
-        throw_IllegalStateException(env, "can't get VLCObject instance");
-    return p_obj;
-}
-
-
-static void
-VLCJniObject_setInstance(JNIEnv *env, jobject thiz, vlcjni_object *p_obj)
-{
-    (*env)->SetLongField(env, thiz,
-                         fields.VLCObject.mInstanceID,
-                         (jlong)(intptr_t)p_obj);
-}*/
