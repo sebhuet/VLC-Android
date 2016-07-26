@@ -1,9 +1,11 @@
 #include <stdlib.h>
+#include <string>
 #include <jni.h>
 #include <medialibrary/IMediaLibrary.h>
 #define LOG_TAG "VLC/JNI/MediaLibrary"
 #include "log.h"
 #include "utils.h"
+#include "AndroidMediaLibrary.h"
 
 #define VLC_JNI_VERSION JNI_VERSION_1_2
 
@@ -22,16 +24,17 @@ static inline void throw_IllegalArgumentException(JNIEnv *env, const char *p_err
     env->ThrowNew(ml_fields.IllegalArgumentException.clazz, p_error);
 }
 
-static medialibrary::IMediaLibrary *
+static AndroidMediaLibrary *
 MediaLibrary_getInstanceInternal(JNIEnv *env, jobject thiz)
 {
-    return (medialibrary::IMediaLibrary*)(intptr_t) env->GetLongField(thiz,
+    return (AndroidMediaLibrary*)(intptr_t) env->GetLongField(thiz,
                                                 ml_fields.MediaLibrary.instanceID);
 }
-medialibrary::IMediaLibrary *
+
+AndroidMediaLibrary *
 MediaLibrary_getInstance(JNIEnv *env, jobject thiz)
 {
-    medialibrary::IMediaLibrary *p_obj = MediaLibrary_getInstanceInternal(env, thiz);
+    AndroidMediaLibrary *p_obj = MediaLibrary_getInstanceInternal(env, thiz);
     if (!p_obj)
         throw_IllegalStateException(env, "can't get VLCObject instance");
     return p_obj;
@@ -39,7 +42,7 @@ MediaLibrary_getInstance(JNIEnv *env, jobject thiz)
 
 
 static void
-MediaLibrary_setInstance(JNIEnv *env, jobject thiz, medialibrary::IMediaLibrary *p_obj)
+MediaLibrary_setInstance(JNIEnv *env, jobject thiz, AndroidMediaLibrary *p_obj)
 {
     env->SetLongField(thiz,
                          ml_fields.MediaLibrary.instanceID,
@@ -47,14 +50,17 @@ MediaLibrary_setInstance(JNIEnv *env, jobject thiz, medialibrary::IMediaLibrary 
 }
 
 void
-init(JNIEnv* env, jobject thiz )
+init(JNIEnv* env, jobject thiz, jstring appPath )
 {
-    medialibrary::IMediaLibrary* ml = NewMediaLibrary();
-    MediaLibrary_setInstance(env, thiz, ml);
+    const char *path = env->GetStringUTFChars(appPath, JNI_FALSE);
+    const std::string& stringPath(path);
+    AndroidMediaLibrary aml ( stringPath );
+    MediaLibrary_setInstance(env, thiz, &aml);
+    env->ReleaseStringUTFChars(appPath, path);
 }
 
 static JNINativeMethod methods[] = {
-  {"nativeInit", "()Ljava/lang/String;", (void*)init },
+  {"nativeInit", "(Ljava/lang/String;)V", (void*)init },
 };
 
 jint JNI_OnLoad(JavaVM *vm, void *reserved)

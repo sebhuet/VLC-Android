@@ -1,8 +1,11 @@
 package org.videolan.medialibrary;
 
+import android.content.Context;
+
 public class Medialibrary {
 
     public long mInstanceID;
+    private Context mContext;
 
     private static Medialibrary mInstance;
 
@@ -12,13 +15,14 @@ public class Medialibrary {
         System.loadLibrary("mla");
     }
 
-    public Medialibrary() {
-        nativeInit();
+    public Medialibrary(Context context) {
+        nativeInit(context.getExternalFilesDir(null).getAbsolutePath());
+        mContext = context.getApplicationContext();
     }
 
-    public static Medialibrary getInstance() {
+    public static Medialibrary getInstance(Context context) {
         if (mInstance == null)
-            mInstance = new Medialibrary();
+            mInstance = new Medialibrary(context);
         return mInstance;
     }
 
@@ -27,5 +31,5 @@ public class Medialibrary {
     }
 
     // Native methods
-    public native String nativeInit();
+    public native void nativeInit(String path);
 }
