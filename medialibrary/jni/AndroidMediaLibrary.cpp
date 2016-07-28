@@ -2,12 +2,13 @@
 #define LOG_TAG "VLC/JNI/AndroidMediaLibrary"
 #include "log.h"
 
-AndroidMediaLibrary::AndroidMediaLibrary(const std::string& path)
+AndroidMediaLibrary::AndroidMediaLibrary(const std::string& appDirPath)
     : ml( NewMediaLibrary() )
 {
-    //std::string& dbPath = path + "vlc_media.db";
-    LOGD("AndroidMediaLibrary initialized");
-    //ml.initialize(
+    ml->setLogger( new AndroidMediaLibraryLogger );
+    ml->setVerbosity(medialibrary::LogLevel::Verbose);
+    ml->initialize(appDirPath + "/vlc_media.db", appDirPath + "/thumbs", this);
+    LOGD("init db: initialized");
 }
 
 AndroidMediaLibrary::~AndroidMediaLibrary()
@@ -17,11 +18,11 @@ AndroidMediaLibrary::~AndroidMediaLibrary()
 
 void AndroidMediaLibrary::onMediaAdded( std::vector<medialibrary::MediaPtr> media )
 {
-
+    LOGD("onMediaAdded %s", media.at(0)->title().c_str());
 }
 void AndroidMediaLibrary::onMediaUpdated( std::vector<medialibrary::MediaPtr> media )
 {
-
+    LOGD("onMediaUpdated %s", media.at(0)->title().c_str());
 }
 void AndroidMediaLibrary::onMediaDeleted( std::vector<int64_t> ids )
 {

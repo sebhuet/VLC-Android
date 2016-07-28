@@ -5,6 +5,7 @@
 #include <string>
 
 #include <medialibrary/IMediaLibrary.h>
+#include <medialibrary/IMedia.h>
 #include <medialibrary/Types.h>
 
 //namespace androidmedialibrary
@@ -14,7 +15,7 @@ class AndroidMediaLibrary : public medialibrary::IMediaLibraryCb
 {
 
 public:
-    AndroidMediaLibrary(const std::string& path);
+    AndroidMediaLibrary(const std::string& appDirPath);
     ~AndroidMediaLibrary();
 
     void onMediaAdded( std::vector<medialibrary::MediaPtr> media );
