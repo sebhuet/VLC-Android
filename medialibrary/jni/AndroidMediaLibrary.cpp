@@ -8,12 +8,16 @@ AndroidMediaLibrary::AndroidMediaLibrary(const std::string& appDirPath)
     ml->setLogger( new AndroidMediaLibraryLogger );
     ml->setVerbosity(medialibrary::LogLevel::Verbose);
     ml->initialize(appDirPath + "/vlc_media.db", appDirPath + "/thumbs", this);
-    LOGD("init db: initialized");
 }
 
 AndroidMediaLibrary::~AndroidMediaLibrary()
 {
     delete ml;
+}
+
+void AndroidMediaLibrary::discover(const std::string& mediaPath)
+{
+    ml->discover(mediaPath);
 }
 
 void AndroidMediaLibrary::onMediaAdded( std::vector<medialibrary::MediaPtr> media )

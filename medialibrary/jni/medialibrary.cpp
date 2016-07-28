@@ -54,13 +54,38 @@ init(JNIEnv* env, jobject thiz, jstring appPath )
 {
     const char *path = env->GetStringUTFChars(appPath, JNI_FALSE);
     const std::string& stringPath(path);
-    AndroidMediaLibrary aml ( stringPath );
-    MediaLibrary_setInstance(env, thiz, &aml);
+    AndroidMediaLibrary *aml = new  AndroidMediaLibrary( stringPath );
+    MediaLibrary_setInstance(env, thiz, aml);
     env->ReleaseStringUTFChars(appPath, path);
+}
+
+void release(JNIEnv* env, jobject thiz)
+{
+    AndroidMediaLibrary *aml = MediaLibrary_getInstance(env, thiz);
+    delete aml;
+    MediaLibrary_setInstance(env, thiz, NULL);
+}
+
+void
+discover(JNIEnv* env, jobject thiz, jstring mediaPath )
+{
+    //std::string & folderPath ();
+    //GetJStringContent(env, path, folderPath);
+    const char *path = env->GetStringUTFChars(mediaPath, JNI_FALSE);
+    const std::string& stringPath(path);
+    AndroidMediaLibrary *aml = MediaLibrary_getInstance(env, thiz);
+    if (!aml) {
+        env->ReleaseStringUTFChars(mediaPath, path);
+        throw std::runtime_error( "discover: Failed to get MediaLibrary instance" );
+    }
+    aml->discover(stringPath);
+    env->ReleaseStringUTFChars(mediaPath, path);
 }
 
 static JNINativeMethod methods[] = {
   {"nativeInit", "(Ljava/lang/String;)V", (void*)init },
+  {"nativeRelease", "()V", (void*)release },
+  {"nativeDiscover", "(Ljava/lang/String;)V", (void*)discover },
 };
 
 jint JNI_OnLoad(JavaVM *vm, void *reserved)
@@ -120,6 +145,7 @@ jint JNI_OnLoad(JavaVM *vm, void *reserved)
 
 void JNI_OnUnload(JavaVM* vm, void* reserved)
 {
+    LOGD("JNI interface unloaded.");
     JNIEnv* env = NULL;
 
     if (vm->GetEnv((void**) &env, VLC_JNI_VERSION) != JNI_OK)

@@ -18,6 +18,8 @@ public:
     AndroidMediaLibrary(const std::string& appDirPath);
     ~AndroidMediaLibrary();
 
+    void discover(const std::string& mediaPath);
+
     void onMediaAdded( std::vector<medialibrary::MediaPtr> media );
     void onMediaUpdated( std::vector<medialibrary::MediaPtr> media ) ;
     void onMediaDeleted( std::vector<int64_t> ids ) ;
