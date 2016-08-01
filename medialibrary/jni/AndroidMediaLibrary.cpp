@@ -6,7 +6,7 @@ AndroidMediaLibrary::AndroidMediaLibrary(const std::string& appDirPath)
     : ml( NewMediaLibrary() )
 {
     ml->setLogger( new AndroidMediaLibraryLogger );
-    ml->setVerbosity(medialibrary::LogLevel::Verbose);
+    ml->setVerbosity(medialibrary::LogLevel::Debug);
     ml->initialize(appDirPath + "/vlc_media.db", appDirPath + "/thumbs", this);
 }
 
