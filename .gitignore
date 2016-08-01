@@ -44,6 +44,9 @@ java-libs/appcompat/.project
 .idea
 *.iml
 
+#Qt Creator
+medialibrary/Medialibrary.*
+
 #gradle
 gradle.properties
 gradlew.bat
