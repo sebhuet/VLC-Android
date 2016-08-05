@@ -1,16 +1,16 @@
 #include <stdlib.h>
 #include <string>
 #include <jni.h>
-#include <medialibrary/IMediaLibrary.h>
+#include <medialibrary/IDeviceLister.h>
 #define LOG_TAG "VLC/JNI/MediaLibrary"
 #include "log.h"
 #include "utils.h"
 #include "AndroidMediaLibrary.h"
 
-#define VLC_JNI_VERSION JNI_VERSION_1_2
-
 static JavaVM *myVm;
 fields ml_fields;
+
+
 #define CLASSPATHNAME "org/videolan/medialibrary/Medialibrary"
 
 
@@ -28,7 +28,7 @@ static AndroidMediaLibrary *
 MediaLibrary_getInstanceInternal(JNIEnv *env, jobject thiz)
 {
     return (AndroidMediaLibrary*)(intptr_t) env->GetLongField(thiz,
-                                                ml_fields.MediaLibrary.instanceID);
+                                                              ml_fields.MediaLibrary.instanceID);
 }
 
 AndroidMediaLibrary *
@@ -45,22 +45,27 @@ static void
 MediaLibrary_setInstance(JNIEnv *env, jobject thiz, AndroidMediaLibrary *p_obj)
 {
     env->SetLongField(thiz,
-                         ml_fields.MediaLibrary.instanceID,
-                         (jlong)(intptr_t)p_obj);
+                      ml_fields.MediaLibrary.instanceID,
+                      (jlong)(intptr_t)p_obj);
 }
 
 void
-init(JNIEnv* env, jobject thiz, jstring appPath )
+init(JNIEnv* env, jobject thiz, jstring appPath, jstring libraryPath )
 {
     const char *path = env->GetStringUTFChars(appPath, JNI_FALSE);
+    const char *libPath = env->GetStringUTFChars(libraryPath, JNI_FALSE);
     const std::string& stringPath(path);
-    AndroidMediaLibrary *aml = new  AndroidMediaLibrary( stringPath );
+    const std::string& stringLibPath(libPath);
+    AndroidMediaLibrary *aml = new  AndroidMediaLibrary();
     MediaLibrary_setInstance(env, thiz, aml);
+    aml->initDevices(stringPath, stringLibPath);
     env->ReleaseStringUTFChars(appPath, path);
+    env->ReleaseStringUTFChars(libraryPath, libPath);
 }
 
 void release(JNIEnv* env, jobject thiz)
 {
+    LOGD("release medialib.");
     AndroidMediaLibrary *aml = MediaLibrary_getInstance(env, thiz);
     delete aml;
     MediaLibrary_setInstance(env, thiz, NULL);
@@ -69,15 +74,12 @@ void release(JNIEnv* env, jobject thiz)
 void
 discover(JNIEnv* env, jobject thiz, jstring mediaPath )
 {
-    //std::string & folderPath ();
-    //GetJStringContent(env, path, folderPath);
-    const char *path = env->GetStringUTFChars(mediaPath, JNI_FALSE);
-    const std::string& stringPath(path);
     AndroidMediaLibrary *aml = MediaLibrary_getInstance(env, thiz);
     if (!aml) {
-        env->ReleaseStringUTFChars(mediaPath, path);
         throw std::runtime_error( "discover: Failed to get MediaLibrary instance" );
     }
+    const char *path = env->GetStringUTFChars(mediaPath, JNI_FALSE);
+    const std::string& stringPath(path);
     aml->discover(stringPath);
     env->ReleaseStringUTFChars(mediaPath, path);
 }
@@ -85,21 +87,49 @@ discover(JNIEnv* env, jobject thiz, jstring mediaPath )
 jobjectArray
 getVideos(JNIEnv* env, jobject thiz)
 {
-    jclass stringClass = env->FindClass("java/lang/String");
     AndroidMediaLibrary *aml = MediaLibrary_getInstance(env, thiz);
-    std::vector<medialibrary::MediaPtr> videoFiles = aml->videoFiles();
-    jobjectArray results = env->NewObjectArray(videoFiles.size(), stringClass, NULL);
-    for (int i = 0; i <  videoFiles.size(); ++i) {
-        env->SetObjectArrayElement(results, i, env->NewStringUTF(videoFiles.at(i)->title().c_str()));
+    if (!aml) {
+        LOGE( "getVideos: Failed to get MediaLibrary instance" );
+        throw std::runtime_error( "getVideos: Failed to get MediaLibrary instance" );
     }
-    return results;
+    std::vector<medialibrary::MediaPtr> videoFiles = aml->videoFiles();
+    jobjectArray videoRefs = (jobjectArray) env->NewGlobalRef(env->NewObjectArray(videoFiles.size(), ml_fields.MediaWrapper.clazz, NULL));
+    int index = -1;
+    jobject item = nullptr;
+    for(medialibrary::MediaPtr const& media : videoFiles) {
+        item = mediaToMediaWrapper(env, &ml_fields, media);
+        env->SetObjectArrayElement(videoRefs, ++index, item);
+        env->DeleteLocalRef(item);
+    }
+    return videoRefs;
+}
+
+jobjectArray
+getAudio(JNIEnv* env, jobject thiz)
+{
+    AndroidMediaLibrary *aml = MediaLibrary_getInstance(env, thiz);
+    if (!aml) {
+        LOGE( "getAudio: Failed to get MediaLibrary instance" );
+        throw std::runtime_error( "getVideos: Failed to get MediaLibrary instance" );
+    }
+    std::vector<medialibrary::MediaPtr> audioFiles = aml->audioFiles();
+    jobjectArray audioRefs = (jobjectArray) env->NewGlobalRef(env->NewObjectArray(audioFiles.size(), ml_fields.MediaWrapper.clazz, NULL));
+    int index = -1;
+    jobject item = nullptr;
+    for(medialibrary::MediaPtr const& media : audioFiles) {
+        item = mediaToMediaWrapper(env, &ml_fields, media);
+        env->SetObjectArrayElement(audioRefs, ++index, item);
+        env->DeleteLocalRef(item);
+    }
+    return audioRefs;
 }
 
 static JNINativeMethod methods[] = {
-  {"nativeInit", "(Ljava/lang/String;)V", (void*)init },
-  {"nativeRelease", "()V", (void*)release },
-  {"nativeDiscover", "(Ljava/lang/String;)V", (void*)discover },
-  {"nativeGetVideos", "()[Ljava/lang/String;", (void*)getVideos },
+    {"nativeInit", "(Ljava/lang/String;Ljava/lang/String;)V", (void*)init },
+    {"nativeRelease", "()V", (void*)release },
+    {"nativeDiscover", "(Ljava/lang/String;)V", (void*)discover },
+    {"nativeGetVideos", "()[Lorg/videolan/medialibrary/media/MediaWrapper;", (void*)getVideos },
+    {"nativeGetAudio", "()[Lorg/videolan/medialibrary/media/MediaWrapper;", (void*)getAudio },
 };
 
 jint JNI_OnLoad(JavaVM *vm, void *reserved)
@@ -114,24 +144,24 @@ jint JNI_OnLoad(JavaVM *vm, void *reserved)
 #define GET_CLASS(clazz, str, b_globlal) do { \
     (clazz) = env->FindClass((str)); \
     if (!(clazz)) { \
-        LOGE("FindClass(%s) failed", (str)); \
-        return -1; \
-    } \
+    LOGE("FindClass(%s) failed", (str)); \
+    return -1; \
+} \
     if (b_globlal) { \
-        (clazz) = (jclass) env->NewGlobalRef((clazz)); \
-        if (!(clazz)) { \
-            LOGE("NewGlobalRef(%s) failed", (str)); \
-            return -1; \
-        } \
-    } \
+    (clazz) = (jclass) env->NewGlobalRef((clazz)); \
+    if (!(clazz)) { \
+    LOGE("NewGlobalRef(%s) failed", (str)); \
+    return -1; \
+} \
+} \
 } while (0)
 
 #define GET_ID(get, id, clazz, str, args) do { \
     (id) = env->get((clazz), (str), (args)); \
     if (!(id)) { \
-        LOGE(#get"(%s) failed", (str)); \
-        return -1; \
-    } \
+    LOGE(#get"(%s) failed", (str)); \
+    return -1; \
+} \
 } while (0)
 
     GET_CLASS(ml_fields.IllegalStateException.clazz,
@@ -150,6 +180,26 @@ jint JNI_OnLoad(JavaVM *vm, void *reserved)
            ml_fields.MediaLibrary.clazz,
            "mInstanceID", "J");
 
+//    GET_ID(GetMethodID,
+//           ml_fields.MediaLibrary.onMediaAddedId,
+//           ml_fields.MediaLibrary.clazz,
+//           "onMediaAdded", "([Lorg/videolan/medialibrary/media/MediaWrapper;)V");
+//    GET_ID(GetMethodID,
+//           ml_fields.MediaLibrary.onMediaUpdatedId,
+//           ml_fields.MediaLibrary.clazz,
+//           "onMediaUpdated", "([Lorg/videolan/medialibrary/media/MediaWrapper;)V");
+
+
+
+    GET_CLASS(ml_fields.MediaWrapper.clazz,
+              "org/videolan/medialibrary/media/MediaWrapper", true);
+
+    //     ml_fields.MediaWrapper.initID = env->GetMethodID(ml_fields.MediaWrapper.clazz, "<init>", "(Ljava/lang/String;JJILjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;IILjava/lang/String;IIIIJ)V");
+    GET_ID(GetMethodID,
+           ml_fields.MediaWrapper.initID,
+           ml_fields.MediaWrapper.clazz,
+           "<init>", "(Ljava/lang/String;JJILjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;IILjava/lang/String;IIIIJ)V");
+
 #undef GET_CLASS
 #undef GET_ID
 
@@ -165,5 +215,8 @@ void JNI_OnUnload(JavaVM* vm, void* reserved)
     if (vm->GetEnv((void**) &env, VLC_JNI_VERSION) != JNI_OK)
         return;
 
+    env->DeleteGlobalRef(ml_fields.IllegalArgumentException.clazz);
+    env->DeleteGlobalRef(ml_fields.IllegalStateException.clazz);
     env->DeleteGlobalRef(ml_fields.MediaLibrary.clazz);
+    env->DeleteGlobalRef(ml_fields.MediaWrapper.clazz);
 }

@@ -21,6 +21,16 @@
 #ifndef VLC_MEDIALIB_UTILS_H
 #define VLC_MEDIALIB_UTILS_H
 #include <jni.h>
+#include <medialibrary/Types.h>
+#include <medialibrary/IAlbumTrack.h>
+#include <medialibrary/IVideoTrack.h>
+#include <medialibrary/IFile.h>
+#include <medialibrary/IMedia.h>
+#include <medialibrary/IArtist.h>
+#include <medialibrary/IGenre.h>
+#include <medialibrary/IAlbum.h>
+
+#define VLC_JNI_VERSION JNI_VERSION_1_2
 
 struct fields {
     jint SDK_INT;
@@ -33,6 +43,16 @@ struct fields {
     struct MediaLibrary {
         jclass clazz;
         jfieldID instanceID;
+        jmethodID onMediaAddedId;
+        jmethodID onMediaUpdatedId;
     } MediaLibrary;
+    struct MediaWrapper {
+        jclass clazz;
+        jmethodID initID;
+    } MediaWrapper;
 };
+
+jobject
+mediaToMediaWrapper(JNIEnv*, fields*, medialibrary::MediaPtr);
+
 #endif //VLC_MEDIALIB_UTILS_H

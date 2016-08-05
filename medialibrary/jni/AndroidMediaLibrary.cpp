@@ -2,12 +2,13 @@
 #define LOG_TAG "VLC/JNI/AndroidMediaLibrary"
 #include "log.h"
 
-AndroidMediaLibrary::AndroidMediaLibrary(const std::string& appDirPath)
+AndroidMediaLibrary::AndroidMediaLibrary()
     : p_ml( NewMediaLibrary() )
 {
-    p_ml->setLogger( new AndroidMediaLibraryLogger );
-    p_ml->setVerbosity(medialibrary::LogLevel::Debug);
-    p_ml->initialize(appDirPath + "/vlc_media.db", appDirPath + "/thumbs", this);
+    p_lister = std::make_shared<AndroidDeviceLister>();
+//    p_ml->setLogger( new AndroidMediaLibraryLogger );
+//    p_ml->setVerbosity(medialibrary::LogLevel::Info);
+    p_ml->setDeviceLister(p_lister);
 }
 
 AndroidMediaLibrary::~AndroidMediaLibrary()
@@ -15,25 +16,78 @@ AndroidMediaLibrary::~AndroidMediaLibrary()
     delete p_ml;
 }
 
-void AndroidMediaLibrary::discover(const std::string& mediaPath)
+void
+AndroidMediaLibrary::initDevices(const std::string& appDirPath, const std::string& libpath)
 {
-    p_ml->discover(mediaPath);
+    p_lister->addDevice(libpath, libpath, false);
+    p_ml->initialize(appDirPath + "/vlc_media.db", appDirPath + "/thumbs", this);
+}
+
+void
+AndroidMediaLibrary::discover(const std::string& libraryPath)
+{
+    p_ml->discover(libraryPath);
 }
 
 std::vector<medialibrary::MediaPtr>
 AndroidMediaLibrary::videoFiles( medialibrary::SortingCriteria sort, bool desc )
 {
+    try {
     return p_ml->videoFiles(sort, desc);
+    } catch (const std::exception& e) {
+        LOGE("fail %s", e.what());
+        std::vector<medialibrary::MediaPtr> vector;
+        return vector;
+    }
 }
 
-void AndroidMediaLibrary::onMediaAdded( std::vector<medialibrary::MediaPtr> media )
+std::vector<medialibrary::MediaPtr>
+AndroidMediaLibrary::audioFiles( medialibrary::SortingCriteria sort, bool desc )
 {
-    LOGD("onMediaAdded %s", media.at(0)->title().c_str());
+    try {
+    return p_ml->audioFiles(sort, desc);
+    } catch (const std::exception& e) {
+        LOGE("fail %s", e.what());
+        std::vector<medialibrary::MediaPtr> vector;
+        return vector;
+    }
 }
-void AndroidMediaLibrary::onMediaUpdated( std::vector<medialibrary::MediaPtr> media )
+
+void
+AndroidMediaLibrary::onMediaAdded( std::vector<medialibrary::MediaPtr> mediaList )
 {
-    LOGD("onMediaUpdated %s", media.at(0)->title().c_str());
+//    JNIEnv *env;
+//    myVm->GetEnv((void**) &env, VLC_JNI_VERSION);
+//    jobjectArray mediaRefs = (jobjectArray) env->NewGlobalRef(env->NewObjectArray(mediaList.size(), m_fields.MediaWrapper.clazz, NULL));
+//    int index = -1;
+//    jobject item = nullptr;
+    for(medialibrary::MediaPtr const& media : mediaList) {
+        LOGD("onMediaAdded %s", media->title().c_str());
+//        item = mediaToMediaWrapper(env, &m_fields, media);
+//        env->SetObjectArrayElement(mediaRefs, ++index, item);
+//        env->DeleteLocalRef(item);
+    }
+//    env->CallStaticVoidMethod(m_fields.MediaLibrary.clazz, m_fields.MediaLibrary.onMediaAddedId, mediaRefs);
+//    env->DeleteLocalRef(mediaRefs);
 }
+
+void AndroidMediaLibrary::onMediaUpdated( std::vector<medialibrary::MediaPtr> mediaList )
+{
+//    JNIEnv *env;
+//    myVm->GetEnv((void**) &env, VLC_JNI_VERSION);
+//    jobjectArray mediaRefs = (jobjectArray) env->NewGlobalRef(env->NewObjectArray(mediaList.size(), m_fields.MediaWrapper.clazz, NULL));
+//    int index = -1;
+//    jobject item = nullptr;
+    for(medialibrary::MediaPtr const& media : mediaList) {
+        LOGD("onMediaUpdated %s", media->title().c_str());
+//        item = mediaToMediaWrapper(env, &m_fields, media);
+//        env->SetObjectArrayElement(mediaRefs, ++index, item);
+//        env->DeleteLocalRef(item);
+    }
+//    env->CallStaticVoidMethod(m_fields.MediaLibrary.clazz, m_fields.MediaLibrary.onMediaUpdatedId, mediaRefs);
+//    env->DeleteLocalRef(mediaRefs);
+}
+
 void AndroidMediaLibrary::onMediaDeleted( std::vector<int64_t> ids )
 {
 

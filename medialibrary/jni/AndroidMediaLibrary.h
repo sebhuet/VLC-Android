@@ -3,23 +3,29 @@
 
 #include <vector>
 #include <string>
+#include <tuple>
+#include <stdlib.h>
+#include <jni.h>
 
-#include <medialibrary/IMediaLibrary.h>
+#include "AndroidDeviceLister.h"
+#include "utils.h"
+
+#include <medialibrary/IDeviceLister.h>
 #include <medialibrary/IMedia.h>
+#include <medialibrary/IMediaLibrary.h>
 #include <medialibrary/Types.h>
-
-//namespace androidmedialibrary
-//{
 
 class AndroidMediaLibrary : public medialibrary::IMediaLibraryCb
 {
-
 public:
-    AndroidMediaLibrary(const std::string& appDirPath);
+    AndroidMediaLibrary();
     ~AndroidMediaLibrary();
 
-    void discover(const std::string& mediaPath);
+    void initDevices(const std::string& appDirPath, const std::string& libPath);
+    void discover(const std::string&);
     std::vector<medialibrary::MediaPtr> videoFiles( medialibrary::SortingCriteria sort = medialibrary::SortingCriteria::Default, bool desc = false );
+    std::vector<medialibrary::MediaPtr> audioFiles( medialibrary::SortingCriteria sort = medialibrary::SortingCriteria::Default, bool desc = false );
+
 
     void onMediaAdded( std::vector<medialibrary::MediaPtr> media );
     void onMediaUpdated( std::vector<medialibrary::MediaPtr> media ) ;
@@ -39,7 +45,9 @@ public:
     void onParsingStatsUpdated( uint32_t percent);
 
 private:
+    JavaVM *myVm;
+    fields m_fields;
     medialibrary::IMediaLibrary* p_ml;
+    std::shared_ptr<AndroidDeviceLister> p_lister;
 };
-//}
 #endif // ANDROIDMEDIALIBRARY_H
