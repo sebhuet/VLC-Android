@@ -23,6 +23,7 @@ package org.videolan.vlc.media;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
+import org.videolan.medialibrary.media.MediaWrapper;
 import org.videolan.vlc.VLCApplication;
 import org.videolan.vlc.gui.helpers.BitmapUtil;
 

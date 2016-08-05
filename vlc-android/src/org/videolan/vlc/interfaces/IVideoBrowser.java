@@ -20,7 +20,7 @@
 
 package org.videolan.vlc.interfaces;
 
-import org.videolan.vlc.media.MediaWrapper;
+import org.videolan.medialibrary.media.MediaWrapper;
 
 public interface IVideoBrowser extends IBrowser {
     public void setItemToUpdate(MediaWrapper item);

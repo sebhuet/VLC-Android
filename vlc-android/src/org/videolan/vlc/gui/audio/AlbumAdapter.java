@@ -37,7 +37,7 @@ import org.videolan.vlc.R;
 import org.videolan.vlc.databinding.AudioBrowserItemBinding;
 import org.videolan.vlc.gui.helpers.MediaComparators;
 import org.videolan.vlc.interfaces.IAudioClickHandler;
-import org.videolan.vlc.media.MediaWrapper;
+import org.videolan.medialibrary.media.MediaWrapper;
 
 import java.util.ArrayList;
 import java.util.Collections;

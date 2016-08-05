@@ -30,7 +30,7 @@ import org.videolan.vlc.VLCApplication;
 import org.videolan.vlc.databinding.ListItemBinding;
 import org.videolan.vlc.media.MediaDatabase;
 import org.videolan.vlc.media.MediaUtils;
-import org.videolan.vlc.media.MediaWrapper;
+import org.videolan.medialibrary.media.MediaWrapper;
 
 import java.util.ArrayList;
 

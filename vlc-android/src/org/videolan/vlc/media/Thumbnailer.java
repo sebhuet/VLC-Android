@@ -29,6 +29,7 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.videolan.medialibrary.media.MediaWrapper;
 import org.videolan.libvlc.util.VLCUtil;
 import org.videolan.vlc.R;
 import org.videolan.vlc.VLCApplication;

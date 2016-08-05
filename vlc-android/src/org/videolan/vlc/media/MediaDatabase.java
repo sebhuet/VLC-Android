@@ -36,6 +36,7 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import org.videolan.libvlc.Media;
+import org.videolan.medialibrary.media.MediaWrapper;
 import org.videolan.libvlc.util.AndroidUtil;
 import org.videolan.vlc.VLCApplication;
 
