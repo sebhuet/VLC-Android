@@ -82,10 +82,24 @@ discover(JNIEnv* env, jobject thiz, jstring mediaPath )
     env->ReleaseStringUTFChars(mediaPath, path);
 }
 
+jobjectArray
+getVideos(JNIEnv* env, jobject thiz)
+{
+    jclass stringClass = env->FindClass("java/lang/String");
+    AndroidMediaLibrary *aml = MediaLibrary_getInstance(env, thiz);
+    std::vector<medialibrary::MediaPtr> videoFiles = aml->videoFiles();
+    jobjectArray results = env->NewObjectArray(videoFiles.size(), stringClass, NULL);
+    for (int i = 0; i <  videoFiles.size(); ++i) {
+        env->SetObjectArrayElement(results, i, env->NewStringUTF(videoFiles.at(i)->title().c_str()));
+    }
+    return results;
+}
+
 static JNINativeMethod methods[] = {
   {"nativeInit", "(Ljava/lang/String;)V", (void*)init },
   {"nativeRelease", "()V", (void*)release },
   {"nativeDiscover", "(Ljava/lang/String;)V", (void*)discover },
+  {"nativeGetVideos", "()[Ljava/lang/String;", (void*)getVideos },
 };
 
 jint JNI_OnLoad(JavaVM *vm, void *reserved)

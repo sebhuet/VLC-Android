@@ -43,4 +43,5 @@ public class Medialibrary {
     public native void nativeInit(String path);
     public native void nativeRelease();
     public native void nativeDiscover(String path);
+    public native String[] nativeGetVideos();
 }

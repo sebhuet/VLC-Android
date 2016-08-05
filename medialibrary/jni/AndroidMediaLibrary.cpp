@@ -3,21 +3,27 @@
 #include "log.h"
 
 AndroidMediaLibrary::AndroidMediaLibrary(const std::string& appDirPath)
-    : ml( NewMediaLibrary() )
+    : p_ml( NewMediaLibrary() )
 {
-    ml->setLogger( new AndroidMediaLibraryLogger );
-    ml->setVerbosity(medialibrary::LogLevel::Debug);
-    ml->initialize(appDirPath + "/vlc_media.db", appDirPath + "/thumbs", this);
+    p_ml->setLogger( new AndroidMediaLibraryLogger );
+    p_ml->setVerbosity(medialibrary::LogLevel::Debug);
+    p_ml->initialize(appDirPath + "/vlc_media.db", appDirPath + "/thumbs", this);
 }
 
 AndroidMediaLibrary::~AndroidMediaLibrary()
 {
-    delete ml;
+    delete p_ml;
 }
 
 void AndroidMediaLibrary::discover(const std::string& mediaPath)
 {
-    ml->discover(mediaPath);
+    p_ml->discover(mediaPath);
+}
+
+std::vector<medialibrary::MediaPtr>
+AndroidMediaLibrary::videoFiles( medialibrary::SortingCriteria sort, bool desc )
+{
+    return p_ml->videoFiles(sort, desc);
 }
 
 void AndroidMediaLibrary::onMediaAdded( std::vector<medialibrary::MediaPtr> media )

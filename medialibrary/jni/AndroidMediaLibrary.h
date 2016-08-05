@@ -19,6 +19,7 @@ public:
     ~AndroidMediaLibrary();
 
     void discover(const std::string& mediaPath);
+    std::vector<medialibrary::MediaPtr> videoFiles( medialibrary::SortingCriteria sort = medialibrary::SortingCriteria::Default, bool desc = false );
 
     void onMediaAdded( std::vector<medialibrary::MediaPtr> media );
     void onMediaUpdated( std::vector<medialibrary::MediaPtr> media ) ;
@@ -38,7 +39,7 @@ public:
     void onParsingStatsUpdated( uint32_t percent);
 
 private:
-    medialibrary::IMediaLibrary* ml;
+    medialibrary::IMediaLibrary* p_ml;
 };
 //}
 #endif // ANDROIDMEDIALIBRARY_H
