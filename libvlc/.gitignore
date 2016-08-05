@@ -5,3 +5,6 @@ obj/
 jni/libvlcjni-modules.c
 jni/libvlcjni-symbols.c
 .settings
+
+#QtCreator files
+LibVLC.*
