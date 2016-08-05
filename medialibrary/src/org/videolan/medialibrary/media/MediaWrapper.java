@@ -88,6 +88,20 @@ public class MediaWrapper implements Parcelable {
 
     /**
      * Create a new MediaWrapper
+     * @param mrl Should not be null.
+     */
+    public MediaWrapper(String mrl, long time, long length, int type,
+                      String title, String artist, String genre, String album, String albumArtist, int width,
+                      int height, String artworkURL, int audio, int spu, int trackNumber, int discNumber, long lastModified) {
+        if (mrl == null)
+            throw new NullPointerException("uri was null");
+
+        mUri = Uri.parse(mrl);
+        init(time, length, type, null, title, artist, genre, album, albumArtist, width, height, artworkURL, audio, spu, trackNumber, discNumber, lastModified, null);
+    }
+
+    /**
+     * Create a new MediaWrapper
      * @param uri Should not be null.
      */
     public MediaWrapper(Uri uri) {
