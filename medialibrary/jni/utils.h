@@ -45,6 +45,18 @@ struct fields {
         jfieldID instanceID;
         jmethodID onMediaAddedId;
         jmethodID onMediaUpdatedId;
+        jmethodID onMediaDeletedId;
+        jmethodID onArtistsAddedId;
+        jmethodID onArtistsModifiedId;
+        jmethodID onArtistsDeletedId;
+        jmethodID onAlbumsAddedId;
+        jmethodID onAlbumsModifiedId;
+        jmethodID onAlbumsDeletedId;
+        jmethodID onTracksAddedId;
+        jmethodID onTracksDeletedId;
+        jmethodID onDiscoveryStartedId;
+        jmethodID onDiscoveryCompletedId;
+        jmethodID onParsingStatsUpdatedId;
     } MediaLibrary;
     struct MediaWrapper {
         jclass clazz;

@@ -12,7 +12,7 @@ public class Medialibrary {
     public long mInstanceID;
     private Context mContext;
 
-    private static Medialibrary mInstance;
+    private static Medialibrary sInstance;
 
     static {
         System.loadLibrary("sqlite3");
@@ -33,9 +33,9 @@ public class Medialibrary {
     }
 
     public static Medialibrary getInstance(Context context) {
-        if (mInstance == null)
-            mInstance = new Medialibrary(context);
-        return mInstance;
+        if (sInstance == null)
+            sInstance = new Medialibrary(context);
+        return sInstance;
     }
 
     public long getId() {
@@ -51,6 +51,24 @@ public class Medialibrary {
         for (MediaWrapper media : mediaList)
             Log.d(TAG, "onMediaUpdated: "+media.getTitle());
     }
+
+    public static void onMediaDeleted(long[] ids) {
+        for (long id : ids)
+            Log.d(TAG, "onMediaDeleted: "+id);
+    }
+
+    public static void onDiscoveryStarted(String entryPoint) {
+         Log.d(TAG, "onDiscoveryStarted: "+entryPoint);
+    }
+
+    public static void onDiscoveryCompleted(String entryPoint) {
+         Log.d(TAG, "onDiscoveryCompleted: "+entryPoint);
+    }
+
+    public static void onParsingStatsUpdated(int percent) {
+         Log.d(TAG, "onParsingStatsUpdated: "+percent);
+    }
+
 
     // Native methods
     public native void nativeInit(String path, String libPath);

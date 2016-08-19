@@ -7,7 +7,6 @@ jobject
 mediaToMediaWrapper(JNIEnv* env, fields *fields, medialibrary::MediaPtr mediaPtr)
 {
     //TODO get track, audio & spu track numbers
-    LOGD("mediaToMediaWrapper %s", mediaPtr->title().c_str());
     jint type;
     switch (mediaPtr->type()) {
     case medialibrary::IMedia::Type::AudioType:
@@ -21,7 +20,7 @@ mediaToMediaWrapper(JNIEnv* env, fields *fields, medialibrary::MediaPtr mediaPtr
         break;
     }
     medialibrary::AlbumTrackPtr p_albumTrack = mediaPtr->albumTrack();
-    jstring artist, genre, album, albumArtist;
+    jstring artist, genre, album, albumArtist, mrl, title, thumbnail;
     if (p_albumTrack) {
         if (p_albumTrack->artist() != nullptr) {
             artist = env->NewStringUTF(p_albumTrack->artist()->name().c_str());
@@ -46,15 +45,17 @@ mediaToMediaWrapper(JNIEnv* env, fields *fields, medialibrary::MediaPtr mediaPtr
         album = nullptr;
         albumArtist = nullptr;
     }
+    title = env->NewStringUTF(mediaPtr->title().c_str());
+    mrl = env->NewStringUTF(mediaPtr->files().at(0)->mrl().c_str());
+    thumbnail = env->NewStringUTF(mediaPtr->thumbnail().c_str());
     bool hasVideoTracks = !mediaPtr->videoTracks().empty();
-    LOGD("Has video %d", hasVideoTracks);
     unsigned int width = hasVideoTracks ? mediaPtr->videoTracks().at(0)->width() : 0;
     unsigned int height = hasVideoTracks ? mediaPtr->videoTracks().at(0)->height() : 0;
 
     jobject item = env->NewObject(fields->MediaWrapper.clazz, fields->MediaWrapper.initID,
-                          env->NewStringUTF(mediaPtr->files().at(0)->mrl().c_str()),(jlong) mediaPtr->duration(), (jlong) -1, type,
-                          env->NewStringUTF(mediaPtr->title().c_str()), artist, genre, album,
-                          albumArtist, width, height, env->NewStringUTF(mediaPtr->thumbnail().c_str()),
+                          mrl,(jlong) mediaPtr->duration(), (jlong) -1, type,
+                          title, artist, genre, album,
+                          albumArtist, width, height, thumbnail,
                           (jint) -2, (jint) -2, (jint) 0, (jint) 0, (jlong) mediaPtr->files().at(0)->lastModificationDate());
     if (artist != nullptr)
         env->DeleteLocalRef(artist);
@@ -64,5 +65,8 @@ mediaToMediaWrapper(JNIEnv* env, fields *fields, medialibrary::MediaPtr mediaPtr
         env->DeleteLocalRef(album);
     if (albumArtist != nullptr)
         env->DeleteLocalRef(albumArtist);
+    env->DeleteLocalRef(title);
+    env->DeleteLocalRef(mrl);
+    env->DeleteLocalRef(thumbnail);
     return item;
 }

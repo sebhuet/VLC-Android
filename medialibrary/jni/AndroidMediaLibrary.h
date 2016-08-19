@@ -18,7 +18,7 @@
 class AndroidMediaLibrary : public medialibrary::IMediaLibraryCb
 {
 public:
-    AndroidMediaLibrary();
+    AndroidMediaLibrary(JavaVM *vm, fields *ref_fields);
     ~AndroidMediaLibrary();
 
     void initDevices(const std::string& appDirPath, const std::string& libPath);
@@ -45,8 +45,11 @@ public:
     void onParsingStatsUpdated( uint32_t percent);
 
 private:
+    JNIEnv *getEnv();
+    void DetachCurrentThread();
+
     JavaVM *myVm;
-    fields m_fields;
+    fields *p_fields;
     medialibrary::IMediaLibrary* p_ml;
     std::shared_ptr<AndroidDeviceLister> p_lister;
 };

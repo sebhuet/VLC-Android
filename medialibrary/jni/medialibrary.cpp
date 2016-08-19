@@ -56,7 +56,7 @@ init(JNIEnv* env, jobject thiz, jstring appPath, jstring libraryPath )
     const char *libPath = env->GetStringUTFChars(libraryPath, JNI_FALSE);
     const std::string& stringPath(path);
     const std::string& stringLibPath(libPath);
-    AndroidMediaLibrary *aml = new  AndroidMediaLibrary();
+    AndroidMediaLibrary *aml = new  AndroidMediaLibrary(myVm, &ml_fields);
     MediaLibrary_setInstance(env, thiz, aml);
     aml->initDevices(stringPath, stringLibPath);
     env->ReleaseStringUTFChars(appPath, path);
@@ -180,21 +180,35 @@ jint JNI_OnLoad(JavaVM *vm, void *reserved)
            ml_fields.MediaLibrary.clazz,
            "mInstanceID", "J");
 
-//    GET_ID(GetMethodID,
-//           ml_fields.MediaLibrary.onMediaAddedId,
-//           ml_fields.MediaLibrary.clazz,
-//           "onMediaAdded", "([Lorg/videolan/medialibrary/media/MediaWrapper;)V");
-//    GET_ID(GetMethodID,
-//           ml_fields.MediaLibrary.onMediaUpdatedId,
-//           ml_fields.MediaLibrary.clazz,
-//           "onMediaUpdated", "([Lorg/videolan/medialibrary/media/MediaWrapper;)V");
-
+    GET_ID(GetStaticMethodID,
+           ml_fields.MediaLibrary.onMediaAddedId,
+           ml_fields.MediaLibrary.clazz,
+           "onMediaAdded", "([Lorg/videolan/medialibrary/media/MediaWrapper;)V");
+    GET_ID(GetStaticMethodID,
+           ml_fields.MediaLibrary.onMediaUpdatedId,
+           ml_fields.MediaLibrary.clazz,
+           "onMediaUpdated", "([Lorg/videolan/medialibrary/media/MediaWrapper;)V");
+    GET_ID(GetStaticMethodID,
+           ml_fields.MediaLibrary.onMediaDeletedId,
+           ml_fields.MediaLibrary.clazz,
+           "onMediaDeleted", "([J)V");
+    GET_ID(GetStaticMethodID,
+           ml_fields.MediaLibrary.onDiscoveryStartedId,
+           ml_fields.MediaLibrary.clazz,
+           "onDiscoveryStarted", "(Ljava/lang/String;)V");
+    GET_ID(GetStaticMethodID,
+           ml_fields.MediaLibrary.onDiscoveryCompletedId,
+           ml_fields.MediaLibrary.clazz,
+           "onDiscoveryCompleted", "(Ljava/lang/String;)V");
+    GET_ID(GetStaticMethodID,
+           ml_fields.MediaLibrary.onParsingStatsUpdatedId,
+           ml_fields.MediaLibrary.clazz,
+           "onParsingStatsUpdated", "(I)V");
 
 
     GET_CLASS(ml_fields.MediaWrapper.clazz,
               "org/videolan/medialibrary/media/MediaWrapper", true);
 
-    //     ml_fields.MediaWrapper.initID = env->GetMethodID(ml_fields.MediaWrapper.clazz, "<init>", "(Ljava/lang/String;JJILjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;IILjava/lang/String;IIIIJ)V");
     GET_ID(GetMethodID,
            ml_fields.MediaWrapper.initID,
            ml_fields.MediaWrapper.clazz,
