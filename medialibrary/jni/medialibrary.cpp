@@ -10,44 +10,16 @@
 static JavaVM *myVm;
 fields ml_fields;
 
-
 #define CLASSPATHNAME "org/videolan/medialibrary/Medialibrary"
 
-
-static inline void throw_IllegalStateException(JNIEnv *env, const char *p_error)
-{
-    env->ThrowNew(ml_fields.IllegalStateException.clazz, p_error);
-}
-
-static inline void throw_IllegalArgumentException(JNIEnv *env, const char *p_error)
-{
-    env->ThrowNew(ml_fields.IllegalArgumentException.clazz, p_error);
-}
-
-static AndroidMediaLibrary *
-MediaLibrary_getInstanceInternal(JNIEnv *env, jobject thiz)
-{
-    return (AndroidMediaLibrary*)(intptr_t) env->GetLongField(thiz,
-                                                              ml_fields.MediaLibrary.instanceID);
-}
-
-AndroidMediaLibrary *
-MediaLibrary_getInstance(JNIEnv *env, jobject thiz)
-{
-    AndroidMediaLibrary *p_obj = MediaLibrary_getInstanceInternal(env, thiz);
-    if (!p_obj)
-        throw_IllegalStateException(env, "can't get VLCObject instance");
-    return p_obj;
-}
+static inline void throw_IllegalStateException(JNIEnv *env, const char *p_error);
+static inline void throw_IllegalArgumentException(JNIEnv *env, const char *p_error);
+static AndroidMediaLibrary *MediaLibrary_getInstanceInternal(JNIEnv *env, jobject thiz);
+AndroidMediaLibrary *MediaLibrary_getInstance(JNIEnv *env, jobject thiz);
 
 
 static void
-MediaLibrary_setInstance(JNIEnv *env, jobject thiz, AndroidMediaLibrary *p_obj)
-{
-    env->SetLongField(thiz,
-                      ml_fields.MediaLibrary.instanceID,
-                      (jlong)(intptr_t)p_obj);
-}
+MediaLibrary_setInstance(JNIEnv *env, jobject thiz, AndroidMediaLibrary *p_obj);
 
 void
 init(JNIEnv* env, jobject thiz, jstring appPath, jstring libraryPath )
@@ -65,7 +37,7 @@ init(JNIEnv* env, jobject thiz, jstring appPath, jstring libraryPath )
 
 void release(JNIEnv* env, jobject thiz)
 {
-    LOGD("release medialib.");
+    LOGD("/!\\ release medialib. /!\\");
     AndroidMediaLibrary *aml = MediaLibrary_getInstance(env, thiz);
     delete aml;
     MediaLibrary_setInstance(env, thiz, NULL);
@@ -75,9 +47,6 @@ void
 discover(JNIEnv* env, jobject thiz, jstring mediaPath )
 {
     AndroidMediaLibrary *aml = MediaLibrary_getInstance(env, thiz);
-    if (!aml) {
-        throw std::runtime_error( "discover: Failed to get MediaLibrary instance" );
-    }
     const char *path = env->GetStringUTFChars(mediaPath, JNI_FALSE);
     const std::string& stringPath(path);
     aml->discover(stringPath);
@@ -88,10 +57,6 @@ jobjectArray
 getVideos(JNIEnv* env, jobject thiz)
 {
     AndroidMediaLibrary *aml = MediaLibrary_getInstance(env, thiz);
-    if (!aml) {
-        LOGE( "getVideos: Failed to get MediaLibrary instance" );
-        throw std::runtime_error( "getVideos: Failed to get MediaLibrary instance" );
-    }
     std::vector<medialibrary::MediaPtr> videoFiles = aml->videoFiles();
     jobjectArray videoRefs = (jobjectArray) env->NewGlobalRef(env->NewObjectArray(videoFiles.size(), ml_fields.MediaWrapper.clazz, NULL));
     int index = -1;
@@ -108,10 +73,6 @@ jobjectArray
 getAudio(JNIEnv* env, jobject thiz)
 {
     AndroidMediaLibrary *aml = MediaLibrary_getInstance(env, thiz);
-    if (!aml) {
-        LOGE( "getAudio: Failed to get MediaLibrary instance" );
-        throw std::runtime_error( "getVideos: Failed to get MediaLibrary instance" );
-    }
     std::vector<medialibrary::MediaPtr> audioFiles = aml->audioFiles();
     jobjectArray audioRefs = (jobjectArray) env->NewGlobalRef(env->NewObjectArray(audioFiles.size(), ml_fields.MediaWrapper.clazz, NULL));
     int index = -1;
@@ -233,4 +194,40 @@ void JNI_OnUnload(JavaVM* vm, void* reserved)
     env->DeleteGlobalRef(ml_fields.IllegalStateException.clazz);
     env->DeleteGlobalRef(ml_fields.MediaLibrary.clazz);
     env->DeleteGlobalRef(ml_fields.MediaWrapper.clazz);
+}
+
+
+static inline void throw_IllegalStateException(JNIEnv *env, const char *p_error)
+{
+    env->ThrowNew(ml_fields.IllegalStateException.clazz, p_error);
+}
+
+static inline void throw_IllegalArgumentException(JNIEnv *env, const char *p_error)
+{
+    env->ThrowNew(ml_fields.IllegalArgumentException.clazz, p_error);
+}
+
+static AndroidMediaLibrary *
+MediaLibrary_getInstanceInternal(JNIEnv *env, jobject thiz)
+{
+    return (AndroidMediaLibrary*)(intptr_t) env->GetLongField(thiz,
+                                                              ml_fields.MediaLibrary.instanceID);
+}
+
+AndroidMediaLibrary *
+MediaLibrary_getInstance(JNIEnv *env, jobject thiz)
+{
+    AndroidMediaLibrary *p_obj = MediaLibrary_getInstanceInternal(env, thiz);
+    if (!p_obj)
+        throw_IllegalStateException(env, "can't get VLCObject instance");
+    return p_obj;
+}
+
+
+static void
+MediaLibrary_setInstance(JNIEnv *env, jobject thiz, AndroidMediaLibrary *p_obj)
+{
+    env->SetLongField(thiz,
+                      ml_fields.MediaLibrary.instanceID,
+                      (jlong)(intptr_t)p_obj);
 }

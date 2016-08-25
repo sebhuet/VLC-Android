@@ -13,6 +13,7 @@ AndroidMediaLibrary::AndroidMediaLibrary(JavaVM *vm, fields *ref_fields)
 
 AndroidMediaLibrary::~AndroidMediaLibrary()
 {
+    LOGD("AndroidMediaLibrary delete");
     delete p_ml;
 }
 
@@ -56,45 +57,35 @@ AndroidMediaLibrary::audioFiles( medialibrary::SortingCriteria sort, bool desc )
 void
 AndroidMediaLibrary::onMediaAdded( std::vector<medialibrary::MediaPtr> mediaList )
 {
-    LOGD("onMediaAdded begin");
     JNIEnv *env = getEnv();
-    if (env == nullptr)
+    if (env == NULL)
         return;
-    jobjectArray mediaRefs = (jobjectArray) env->NewGlobalRef(env->NewObjectArray(mediaList.size(), p_fields->MediaWrapper.clazz, NULL));
+    jobjectArray mediaRefs = (jobjectArray) env->NewObjectArray(mediaList.size(), p_fields->MediaWrapper.clazz, NULL);
     int index = -1;
-    jobject item = nullptr;
-    for(medialibrary::MediaPtr const& media : mediaList) {
-        item = mediaToMediaWrapper(env, p_fields, media);
+    for (medialibrary::MediaPtr const& media : mediaList) {
+        jobject item = mediaToMediaWrapper(env, p_fields, media);
         env->SetObjectArrayElement(mediaRefs, ++index, item);
         env->DeleteLocalRef(item);
     }
     env->CallStaticVoidMethod(p_fields->MediaLibrary.clazz, p_fields->MediaLibrary.onMediaAddedId, mediaRefs);
-    //env->DeleteGlobalRef(mediaRefs);
-    DetachCurrentThread();
-    LOGD("onMediaAdded end");
+    env->DeleteLocalRef(mediaRefs);
 }
 
 void AndroidMediaLibrary::onMediaUpdated( std::vector<medialibrary::MediaPtr> mediaList )
 {
-    LOGD("onMediaUpdated begin");
     JNIEnv *env = getEnv();
-    LOGD("env %p", env);
-    if (env == nullptr)
+    if (env == NULL)
         return;
-    jobjectArray mediaRefs = (jobjectArray) env->NewGlobalRef(env->NewObjectArray(mediaList.size(), p_fields->MediaWrapper.clazz, NULL));
-    LOGD("mediaRefs %p", mediaRefs);
+    jobjectArray mediaRefs = (jobjectArray) env->NewObjectArray(mediaList.size(), p_fields->MediaWrapper.clazz, NULL);
     int index = -1;
-    jobject item = nullptr;
-    for(medialibrary::MediaPtr const& media : mediaList) {
-        item = mediaToMediaWrapper(env, p_fields, media);
+    for (medialibrary::MediaPtr const& media : mediaList) {
+        jobject item = mediaToMediaWrapper(env, p_fields, media);
+
         env->SetObjectArrayElement(mediaRefs, ++index, item);
         env->DeleteLocalRef(item);
     }
-    LOGD("loop OK");
     env->CallStaticVoidMethod(p_fields->MediaLibrary.clazz, p_fields->MediaLibrary.onMediaUpdatedId, mediaRefs);
-    //env->DeleteGlobalRef(mediaRefs);
-    DetachCurrentThread();
-    LOGD("onMediaUpdated end");
+    env->DeleteLocalRef(mediaRefs);
 }
 
 void AndroidMediaLibrary::onMediaDeleted( std::vector<int64_t> ids )
@@ -164,18 +155,13 @@ void AndroidMediaLibrary::onParsingStatsUpdated( uint32_t percent)
 
 JNIEnv *
 AndroidMediaLibrary::getEnv() {
-    LOGD("getEnv");
     JNIEnv *env = nullptr;
     switch (myVm->GetEnv((void**)(&env), VLC_JNI_VERSION))
     {
     case JNI_OK:
-        LOGD("env OK");
         break;
     case JNI_EDETACHED:
-        if (myVm->AttachCurrentThread(&env, NULL) != JNI_OK)
-            LOGE("onMediaAdded, failed to attach thread");
-        else
-            LOGD("thread attached");
+        myVm->AttachCurrentThread(&env, NULL);
         break;
     default:
         LOGE("failed to get env");

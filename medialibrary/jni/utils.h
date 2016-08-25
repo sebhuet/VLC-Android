@@ -22,13 +22,6 @@
 #define VLC_MEDIALIB_UTILS_H
 #include <jni.h>
 #include <medialibrary/Types.h>
-#include <medialibrary/IAlbumTrack.h>
-#include <medialibrary/IVideoTrack.h>
-#include <medialibrary/IFile.h>
-#include <medialibrary/IMedia.h>
-#include <medialibrary/IArtist.h>
-#include <medialibrary/IGenre.h>
-#include <medialibrary/IAlbum.h>
 
 #define VLC_JNI_VERSION JNI_VERSION_1_2
 
@@ -65,6 +58,6 @@ struct fields {
 };
 
 jobject
-mediaToMediaWrapper(JNIEnv*, fields*, medialibrary::MediaPtr);
+mediaToMediaWrapper(JNIEnv*, fields*, const medialibrary::MediaPtr &);
 
 #endif //VLC_MEDIALIB_UTILS_H

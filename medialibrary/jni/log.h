@@ -49,7 +49,7 @@ class AndroidMediaLibraryLogger : public medialibrary::ILogger
 
     virtual void Warning( const std::string& msg ) override
     {
-        __android_log_print( ANDROID_LOG_INFO, "VLC/medialibrary", "%s", msg.c_str() );
+        __android_log_print( ANDROID_LOG_WARN, "VLC/medialibrary", "%s", msg.c_str() );
     }
 
     virtual void Info( const std::string& msg ) override

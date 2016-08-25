@@ -32,7 +32,7 @@ public class Medialibrary {
         super.finalize();
     }
 
-    public static Medialibrary getInstance(Context context) {
+    public static synchronized Medialibrary getInstance(Context context) {
         if (sInstance == null)
             sInstance = new Medialibrary(context);
         return sInstance;
