@@ -17,6 +17,7 @@ checkfail()
 #############
 
 RELEASE=0
+ASAN=0
 while [ $# -gt 0 ]; do
     case $1 in
         help|--help)
@@ -30,6 +31,9 @@ while [ $# -gt 0 ]; do
             ;;
         -c)
             CHROME_OS=1
+            ;;
+        --asan)
+            ASAN=1
             ;;
         release|--release)
             RELEASE=1
@@ -414,6 +418,19 @@ else
     NDK_DEBUG=1
 fi
 
+if [ "${ASAN}" = 1 ];then
+    VLC_CFLAGS="${VLC_CFLAGS} -O0 -fno-omit-frame-pointer -fsanitize=address"
+    VLC_CXXFLAGS="${VLC_CXXLAGS} -O0 -fno-omit-frame-pointer -fsanitize=address"
+    VLC_LDFLAGS="${VLC_LDFLAGS} -ldl -fsanitize=address"
+    # ugly, sorry
+    if [ "${ANDROID_API}" = "9" ];then
+        cp ${ANDROID_NDK}/platforms/android-9/arch-${PLATFORM_SHORT_ARCH}/usr/include/stdlib.h \
+            ${NDK_TOOLCHAIN_DIR}/sysroot/usr/include
+        echo "extern int posix_memalign(void **memptr, size_t alignment, size_t size);" \
+            >> ${NDK_TOOLCHAIN_DIR}/sysroot/usr/include/stdlib.h
+    fi
+fi
+
 echo "EXTRA_CFLAGS:      ${EXTRA_CFLAGS}"
 echo "VLC_CFLAGS:        ${VLC_CFLAGS}"
 
@@ -500,6 +517,9 @@ if [ "${CHROME_OS}" = "1" ];then
     VLC_BUILD_DIR=build-chrome-${TARGET_TUPLE}
 else
     VLC_BUILD_DIR=build-android-${TARGET_TUPLE}
+fi
+if [ "${ASAN}" = 1 ];then
+    VLC_BUILD_DIR=${VLC_BUILD_DIR}-asan
 fi
 mkdir -p $VLC_BUILD_DIR && cd $VLC_BUILD_DIR
 
