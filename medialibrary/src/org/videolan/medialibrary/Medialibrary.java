@@ -15,6 +15,7 @@ public class Medialibrary {
     private static Medialibrary sInstance;
 
     static {
+        System.loadLibrary("c++_shared");
         System.loadLibrary("sqlite3");
         System.loadLibrary("medialibrary");
         System.loadLibrary("mla");

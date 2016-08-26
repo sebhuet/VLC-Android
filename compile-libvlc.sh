@@ -735,21 +735,19 @@ if [ "${HAVE_LIBCOMPAT}" = "1" ];then
     checkfail "ndk-build compat failed"
 fi
 
-#################
+################
 # MEDIALIBRARY #
 ################
 
-PROJECTPATH=`pwd`
-
-if [ ! -d "${PROJECTPATH}/medialibrary" ]; then
-    mkdir "${PROJECTPATH}/medialibrary"
+if [ ! -d "${SRC_DIR}/medialibrary" ]; then
+    mkdir "${SRC_DIR}/medialibrary"
 fi
 
 ##########
 # SQLITE #
 ##########
 
-MEDIALIBRARY_MODULE_DIR=${PROJECTPATH}/medialibrary
+MEDIALIBRARY_MODULE_DIR=${SRC_DIR}/medialibrary
 MEDIALIBRARY_BUILD_DIR=${MEDIALIBRARY_MODULE_DIR}/medialibrary
 MEDIALIBRARY_LIB_DIR=$MEDIALIBRARY_MODULE_DIR/.libs/${ANDROID_ABI}
 OUT_LIB_DIR=$MEDIALIBRARY_MODULE_DIR/jni/libs/${ANDROID_ABI}
@@ -769,16 +767,14 @@ fi
     ../bootstrap
     ../configure \
       --host=$TARGET_TUPLE \
-      CPPFLAGS="$CPPFLAGS" \
-      CFLAGS="$CFLAGS ${EXTRA_CFLAGS} --sysroot=${SYSROOT} $COMMON_INC" \
-      CXXFLAGS="$CFLAGS ${EXTRA_CXXFLAGS} -pthread --sysroot=${SYSROOT}" \
-      LDFLAGS="$LDFLAGS $EXTRA_LDFLAGS" \
-      CC="${CROSS_COMPILE}gcc -fPIC --sysroot=${SYSROOT}" \
-      CXX="${CROSS_COMPILE}g++ -fPIC --sysroot=${SYSROOT} -D__cpp_static_assert=200410"
+      CFLAGS="${VLC_CFLAGS} ${EXTRA_CFLAGS} ${NDK_SUPPORT_INCLUDES}" \
+      CXXFLAGS="${VLC_CXXFLAGS} ${EXTRA_CXXFLAGS}" \
+      CC="clang" \
+      CXX="clang++"
 
     make $MAKEFLAGS
 
-    cd ${PROJECTPATH}
+    cd ${SRC_DIR}
     checkfail "sqlite build failed"
 
 ##############################
@@ -787,7 +783,7 @@ fi
 
 if [ ! -d "${MEDIALIBRARY_MODULE_DIR}/medialibrary" ]; then
     echo -e "\e[1m\e[32mmedialibrary source not found, cloning\e[0m"
-    git clone http://code.videolan.org/videolan/medialibrary.git "${PROJECTPATH}/medialibrary/medialibrary"
+    git clone http://code.videolan.org/videolan/medialibrary.git "${SRC_DIR}/medialibrary/medialibrary"
     checkfail "medialibrary source: git clone failed"
 fi
 
@@ -811,12 +807,12 @@ echo -e "\e[1m\e[36mEXTRA_CFLAGS:      ${EXTRA_CFLAGS}\e[0m"
 
 cd ${MEDIALIBRARY_BUILD_DIR}
 
-sed "s#@prefix@#${MEDIALIBRARY_MODULE_DIR}/libvlcpp#g" $PROJECTPATH/pkgs/libvlcpp.pc.in > \
-    $PROJECTPATH/pkgs/libvlcpp.pc;
-sed "s#@libdir@#$PROJECTPATH/libvlc/jni/libs/$ANDROID_ABI#g" $PROJECTPATH/pkgs/libvlc.pc.in > \
-    $PROJECTPATH/pkgs/libvlc.pc;
-sed -i "s#@includedirs@#-I${PROJECTPATH}/vlc/include \
--I${PROJECTPATH}/vlc/build-android-$TARGET_TUPLE/include#g" $PROJECTPATH/pkgs/libvlc.pc;
+sed "s#@prefix@#${MEDIALIBRARY_MODULE_DIR}/libvlcpp#g" $SRC_DIR/pkgs/libvlcpp.pc.in > \
+    $SRC_DIR/pkgs/libvlcpp.pc;
+sed "s#@libdir@#$SRC_DIR/libvlc/jni/libs/$ANDROID_ABI#g" $SRC_DIR/pkgs/libvlc.pc.in > \
+    $SRC_DIR/pkgs/libvlc.pc;
+sed -i "s#@includedirs@#-I${SRC_DIR}/vlc/include \
+-I${SRC_DIR}/vlc/build-android-$TARGET_TUPLE/include#g" $SRC_DIR/pkgs/libvlc.pc;
 
 if [ ! -d build-android ]; then
     mkdir build-android;
@@ -826,21 +822,19 @@ cd build-android;
 ../bootstrap
 ../configure \
     --host=$TARGET_TUPLE \
-    CPPFLAGS="$CPPFLAGS" \
-    CFLAGS="$CFLAGS ${EXTRA_CFLAGS} --sysroot=${SYSROOT} $COMMON_INC" \
-    CXXFLAGS="$CFLAGS ${EXTRA_CXXFLAGS} -pthread --sysroot=${SYSROOT}" \
-    LDFLAGS="$LDFLAGS $EXTRA_LDFLAGS" \
-    CC="${CROSS_COMPILE}gcc -fPIC --sysroot=${SYSROOT}" \
-    CXX="${CROSS_COMPILE}g++ -fPIC --sysroot=${SYSROOT} -D__cpp_static_assert=200410" \
-    NM="${CROSS_COMPILE}nm" \
-    STRIP="${CROSS_COMPILE}strip" \
-    RANLIB="${CROSS_COMPILE}ranlib" \
-    PKG_CONFIG_LIBDIR="$PROJECTPATH/pkgs/" \
-    LIBJPEG_LIBS="-L$PROJECTPATH/vlc/contrib/contrib-android-$TARGET_TUPLE/jpeg/.libs -ljpeg" \
-    LIBJPEG_CFLAGS="-I$PROJECTPATH/vlc/contrib/$TARGET_TUPLE/include/" \
+    CFLAGS="${VLC_CFLAGS} ${EXTRA_CFLAGS} ${NDK_SUPPORT_INCLUDES}" \
+    CXXFLAGS="${VLC_CXXFLAGS} ${EXTRA_CXXFLAGS}" \
+    CC="clang" \
+    CXX="clang++" \
+    NM="${CROSS_TOOLS}nm" \
+    STRIP="${CROSS_TOOLS}strip" \
+    RANLIB="${CROSS_TOOLS}ranlib" \
+    PKG_CONFIG_LIBDIR="$SRC_DIR/pkgs/" \
+    LIBJPEG_LIBS="-L$SRC_DIR/vlc/contrib/contrib-android-$TARGET_TUPLE/jpeg/.libs -ljpeg" \
+    LIBJPEG_CFLAGS="-I$SRC_DIR/vlc/contrib/$TARGET_TUPLE/include/" \
     SQLITE_LIBS="-L$MEDIALIBRARY_MODULE_DIR/$SQLITE_RELEASE/build/.libs -lsqlite3" \
     SQLITE_CFLAGS="-I$MEDIALIBRARY_MODULE_DIR/$SQLITE_RELEASE" \
-    AR="${CROSS_COMPILE}ar"
+    AR="${CROSS_TOOLS}ar"
 checkfail "medialibrary: autoconf failed"
 
 
@@ -859,23 +853,21 @@ fi
 cp -a ${MEDIALIBRARY_MODULE_DIR}/${SQLITE_RELEASE}/build/.libs/libsqlite3.so ${MEDIALIBRARY_LIB_DIR}
 cp -a ${MEDIALIBRARY_BUILD_DIR}/build-android/.libs/libmedialibrary.so ${MEDIALIBRARY_LIB_DIR}/libmedialibrary.so
 
-cd ${PROJECTPATH}
+cd ${SRC_DIR}
 
 echo -e "ndk-build medialibrary"
 
 $ANDROID_NDK/ndk-build -C medialibrary \
+    APP_STL="c++_shared" \
     ANDROID_SYS_HEADERS="$ANDROID_SYS_HEADERS" \
-    TARGET_CFLAGS="$EXTRA_CFLAGS -std=c++11" \
-    EXTRA_LDFLAGS="$EXTRA_LDFLAGS" \
     APP_BUILD_SCRIPT=jni/Android.mk \
-    APP_PLATFORM=${ANDROID_API} \
+    APP_PLATFORM=android-${ANDROID_API} \
     APP_ABI=${ANDROID_ABI} \
-    APP_STL="gnustl_static" \
     LOCAL_CPP_FEATURES="exceptions" \
     SYSROOT=${SYSROOT} \
     TARGET_TUPLE=$TARGET_TUPLE \
     NDK_PROJECT_PATH=jni \
-    NDK_TOOLCHAIN_VERSION=${GCCVER} \
+    NDK_TOOLCHAIN_VERSION=clang \
     NDK_DEBUG=${NDK_DEBUG} \
     OUT_LIB_DIR=${MEDIALIBRARY_LIB_DIR} \
     MEDIALIBRARY_INCLUDE_DIR=${MEDIALIBRARY_BUILD_DIR}/include \
@@ -883,7 +875,7 @@ $ANDROID_NDK/ndk-build -C medialibrary \
 
 checkfail "ndk-build failed"
 
-cd ${PROJECTPATH}
+cd ${SRC_DIR}
 
 if [ ! -d $OUT_LIB_DIR ]; then
     mkdir -p $OUT_LIB_DIR
@@ -893,7 +885,7 @@ cp -a ${MEDIALIBRARY_LIB_DIR}/*.so ${OUT_LIB_DIR}
 
 if [ "$RELEASE" = 1 ]; then
     echo -e "\e[1m\e[32mStripping\e[0m"
-    ${CROSS_COMPILE}strip ${OUT_LIB_DIR}/*.so
+    ${CROSS_TOOLS}strip ${OUT_LIB_DIR}/*.so
     checkfail "stripping"
 fi
 
