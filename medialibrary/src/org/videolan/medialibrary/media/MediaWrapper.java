@@ -51,6 +51,7 @@ public class MediaWrapper implements Parcelable {
     public final static int MEDIA_PAUSED = 0x4;
     public final static int MEDIA_FORCE_AUDIO = 0x8;
 
+    long mId;
     protected String mTitle;
     protected String mDisplayTitle;
     private String mArtist;
@@ -90,7 +91,7 @@ public class MediaWrapper implements Parcelable {
      * Create a new MediaWrapper
      * @param mrl Should not be null.
      */
-    public MediaWrapper(String mrl, long time, long length, int type,
+    public MediaWrapper(long id, String mrl, long time, long length, int type,
                       String title, String artist, String genre, String album, String albumArtist, int width,
                       int height, String artworkURL, int audio, int spu, int trackNumber, int discNumber, long lastModified) {
         if (TextUtils.isEmpty(mrl))
@@ -99,6 +100,7 @@ public class MediaWrapper implements Parcelable {
         if (mrl.charAt(0) == '/')
             mrl = "file://"+mrl;
         mUri = Uri.parse(mrl);
+        mId = id;
         init(time, length, type, null, title, artist, genre, album, albumArtist, width, height, artworkURL, audio, spu, trackNumber, discNumber, lastModified, null);
     }
 
@@ -235,6 +237,10 @@ public class MediaWrapper implements Parcelable {
         mUri = uri;
         init(time, length, type, picture, title, artist, genre, album, albumArtist,
              width, height, artworkURL, audio, spu, trackNumber, discNumber, lastModified, null);
+    }
+
+    public long getId() {
+        return mId;
     }
 
     public String getLocation() {

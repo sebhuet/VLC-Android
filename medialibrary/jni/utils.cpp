@@ -48,7 +48,7 @@ mediaToMediaWrapper(JNIEnv* env, fields *fields, medialibrary::MediaPtr const& m
     unsigned int height = hasVideoTracks ? mediaPtr->videoTracks().at(0)->height() : 0;
 
     jobject item = env->NewObject(fields->MediaWrapper.clazz, fields->MediaWrapper.initID,
-                          mrl,(jlong) mediaPtr->duration(), (jlong) -1, type,
+                          (jlong) mediaPtr->id(), mrl,(jlong) mediaPtr->duration(), (jlong) -1, type,
                           title, artist, genre, album,
                           albumArtist, width, height, thumbnail,
                           (jint) -2, (jint) -2, (jint) 0, (jint) 0, (jlong) mediaPtr->files().at(0)->lastModificationDate());
