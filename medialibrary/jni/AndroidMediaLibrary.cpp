@@ -2,6 +2,9 @@
 #define LOG_TAG "VLC/JNI/AndroidMediaLibrary"
 #include "log.h"
 
+std::string mainStorage = "";
+bool discoveryEnded = false;
+
 AndroidMediaLibrary::AndroidMediaLibrary(JavaVM *vm, fields *ref_fields)
     : p_ml( NewMediaLibrary() ), myVm ( vm ), p_fields (ref_fields)
 {
@@ -97,10 +100,12 @@ void AndroidMediaLibrary::onArtistsAdded( std::vector<medialibrary::ArtistPtr> a
 {
 
 }
+
 void AndroidMediaLibrary::onArtistsModified( std::vector<medialibrary::ArtistPtr> artist )
 {
 
 }
+
 void AndroidMediaLibrary::onArtistsDeleted( std::vector<int64_t> ids )
 {
 
@@ -110,14 +115,17 @@ void AndroidMediaLibrary::onAlbumsAdded( std::vector<medialibrary::AlbumPtr> alb
 {
 
 }
+
 void AndroidMediaLibrary::onAlbumsModified( std::vector<medialibrary::AlbumPtr> albums )
 {
 
 }
+
 void AndroidMediaLibrary::onAlbumsDeleted( std::vector<int64_t> ids )
 {
 
 }
+
 void AndroidMediaLibrary::onTracksAdded( std::vector<medialibrary::AlbumTrackPtr> tracks )
 {
 
@@ -126,26 +134,39 @@ void AndroidMediaLibrary::onTracksDeleted( std::vector<int64_t> trackIds )
 {
 
 }
+
 void AndroidMediaLibrary::onDiscoveryStarted( const std::string& entryPoint )
 {
     JNIEnv *env = getEnv();
     if (env == NULL)
         return;
+    if (mainStorage.empty()) {
+        discoveryEnded = false;
+        mainStorage = entryPoint;
+    }
     jstring ep = env->NewStringUTF(entryPoint.c_str());
     env->CallStaticVoidMethod(p_fields->MediaLibrary.clazz, p_fields->MediaLibrary.onDiscoveryStartedId, ep);
     env->DeleteLocalRef(ep);
 }
+
 void AndroidMediaLibrary::onDiscoveryCompleted( const std::string& entryPoint )
 {
     JNIEnv *env = getEnv();
     if (env == NULL)
         return;
+    if (!entryPoint.compare(mainStorage)) {
+        discoveryEnded = true;
+        mainStorage.clear();
+    }
     jstring ep = env->NewStringUTF(entryPoint.c_str());
     env->CallStaticVoidMethod(p_fields->MediaLibrary.clazz, p_fields->MediaLibrary.onDiscoveryCompletedId, ep);
     env->DeleteLocalRef(ep);
 }
+
 void AndroidMediaLibrary::onParsingStatsUpdated( uint32_t percent)
 {
+    if (!discoveryEnded)
+        return;
     JNIEnv *env = getEnv();
     if (env == NULL)
         return;
