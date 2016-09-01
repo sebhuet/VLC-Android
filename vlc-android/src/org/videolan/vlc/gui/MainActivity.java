@@ -64,6 +64,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import org.videolan.libvlc.util.AndroidUtil;
+import org.videolan.medialibrary.Medialibrary;
 import org.videolan.vlc.BuildConfig;
 import org.videolan.vlc.PlaybackService;
 import org.videolan.vlc.R;
@@ -89,8 +90,8 @@ import org.videolan.vlc.interfaces.IHistory;
 import org.videolan.vlc.interfaces.IRefreshable;
 import org.videolan.vlc.interfaces.ISortable;
 import org.videolan.vlc.media.MediaDatabase;
-import org.videolan.vlc.media.MediaLibrary;
 import org.videolan.vlc.media.MediaUtils;
+import org.videolan.vlc.util.AndroidDevices;
 import org.videolan.vlc.util.Permissions;
 import org.videolan.vlc.util.VLCInstance;
 import org.videolan.vlc.util.WeakHandler;
@@ -112,7 +113,7 @@ public class MainActivity extends AudioPlayerContainerActivity implements Filter
     private static final int ACTIVITY_SHOW_TEXTINFO = 5;
 
 
-    MediaLibrary mMediaLibrary;
+    Medialibrary mMediaLibrary;
 
     private HackyDrawerLayout mDrawerLayout;
     private NavigationView mNavigationView;
@@ -162,13 +163,7 @@ public class MainActivity extends AudioPlayerContainerActivity implements Filter
 
         Permissions.checkReadStoragePermission(this, false);
 
-        mMediaLibrary = MediaLibrary.getInstance();
-        if (!mMediaLibrary.isWorking() && mMediaLibrary.getMediaItems().isEmpty()) {
-            if (mSettings.getBoolean(PreferencesActivity.AUTO_RESCAN, true))
-                mMediaLibrary.scanMediaItems();
-            else
-                mMediaLibrary.loadMediaItems();
-        }
+        mMediaLibrary = Medialibrary.getInstance(this);
 
         /*** Start initializing the UI ***/
 
@@ -179,7 +174,7 @@ public class MainActivity extends AudioPlayerContainerActivity implements Filter
 
         initAudioPlayerContainerActivity();
 
-        if (savedInstanceState != null){
+        if (savedInstanceState != null) {
             mCurrentFragmentId = savedInstanceState.getInt("current");
             if (mCurrentFragmentId > 0)
                 mNavigationView.setCheckedItem(mCurrentFragmentId);
@@ -196,7 +191,7 @@ public class MainActivity extends AudioPlayerContainerActivity implements Filter
 
         /* Set up the sidebar click listener
          * no need to invalidate menu for now */
-        mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout, R.string.drawer_open, R.string.drawer_close){
+        mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout, R.string.drawer_open, R.string.drawer_close) {
             @Override
             public void onDrawerClosed(View drawerView) {
                 super.onDrawerClosed(drawerView);
@@ -210,8 +205,8 @@ public class MainActivity extends AudioPlayerContainerActivity implements Filter
             @Override
             public void onDrawerOpened(View drawerView) {
                 super.onDrawerOpened(drawerView);
-                if(mNavigationView.requestFocus())
-                    ((NavigationMenuView)mNavigationView.getFocusedChild()).setDescendantFocusability(ViewGroup.FOCUS_AFTER_DESCENDANTS);
+                if (mNavigationView.requestFocus())
+                    ((NavigationMenuView) mNavigationView.getFocusedChild()).setDescendantFocusability(ViewGroup.FOCUS_AFTER_DESCENDANTS);
             }
         };
 
@@ -361,7 +356,8 @@ public class MainActivity extends AudioPlayerContainerActivity implements Filter
 
         /* Load media items from database and storage */
         if (mScanNeeded)
-            mMediaLibrary.scanMediaItems();
+            for (String storage : AndroidDevices.getStorageDirectories())
+                mMediaLibrary.nativeDiscover(storage);
         if (mSlidingPane.getState() == mSlidingPane.STATE_CLOSED)
             mActionBar.hide();
         mNavigationView.setCheckedItem(mCurrentFragmentId);
@@ -407,7 +403,7 @@ public class MainActivity extends AudioPlayerContainerActivity implements Filter
             /* Check for an ongoing scan that needs to be resumed during onResume */
             mScanNeeded = mMediaLibrary.isWorking();
             /* Stop scanning for files */
-            mMediaLibrary.stop();
+            mMediaLibrary.nativePauseBackgroundOperations();
         }
         /* Save the tab status in pref */
         SharedPreferences.Editor editor = mSettings.edit();
@@ -673,7 +669,7 @@ public class MainActivity extends AudioPlayerContainerActivity implements Filter
             if(current != null && current instanceof IRefreshable)
                 ((IRefreshable) current).refresh();
             else
-                mMediaLibrary.scanMediaItems(true);
+                mMediaLibrary.nativeReload();
         }
     }
 
@@ -685,7 +681,7 @@ public class MainActivity extends AudioPlayerContainerActivity implements Filter
                 for (Fragment fragment : getSupportFragmentManager().getFragments())
                     if (fragment instanceof MediaBrowserFragment)
                         ((MediaBrowserFragment) fragment).clear();
-                mMediaLibrary.scanMediaItems(true);
+                mMediaLibrary.nativeReload();
             } else if (resultCode == PreferencesActivity.RESULT_RESTART) {
                 Intent intent = new Intent(MainActivity.this, MainActivity.class);
                 finish();

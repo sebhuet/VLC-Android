@@ -48,12 +48,14 @@ import android.widget.TextView;
 
 import org.videolan.libvlc.Media;
 import org.videolan.libvlc.util.AndroidUtil;
+import org.videolan.medialibrary.media.MediaWrapper;
 import org.videolan.vlc.R;
 import org.videolan.vlc.VLCApplication;
 import org.videolan.vlc.gui.MainActivity;
 import org.videolan.vlc.gui.SecondaryActivity;
 import org.videolan.vlc.gui.browser.MediaBrowserFragment;
 import org.videolan.vlc.gui.helpers.UiTools;
+import org.videolan.vlc.gui.view.AutoFitRecyclerView;
 import org.videolan.vlc.gui.view.ContextMenuRecyclerView;
 import org.videolan.vlc.gui.view.SwipeRefreshLayout;
 import org.videolan.vlc.interfaces.ISortable;
@@ -62,11 +64,9 @@ import org.videolan.vlc.media.MediaDatabase;
 import org.videolan.vlc.media.MediaGroup;
 import org.videolan.vlc.media.MediaLibrary;
 import org.videolan.vlc.media.MediaUtils;
-import org.videolan.medialibrary.media.MediaWrapper;
 import org.videolan.vlc.media.Thumbnailer;
 import org.videolan.vlc.util.FileUtils;
 import org.videolan.vlc.util.VLCInstance;
-import org.videolan.vlc.gui.view.AutoFitRecyclerView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -160,8 +160,9 @@ public class VideoGridFragment extends MediaBrowserFragment implements ISortable
     @Override
     public void onPause() {
         super.onPause();
-        mMediaLibrary.setBrowser(null);
-        mMediaLibrary.removeUpdateHandler(mHandler);
+        //TODO
+        //mMediaLibrary.setBrowser(null);
+        //mMediaLibrary.removeUpdateHandler(mHandler);
 
         /* Stop the thumbnailer */
         if (mThumbnailer != null)
@@ -173,8 +174,9 @@ public class VideoGridFragment extends MediaBrowserFragment implements ISortable
         super.onResume();
         if (getActivity() instanceof MainActivity)
             mMainActivity = (MainActivity) getActivity();
-        mMediaLibrary.setBrowser(this);
-        mMediaLibrary.addUpdateHandler(mHandler);
+        //mMediaLibrary.setBrowser(this);
+        //mMediaLibrary.addUpdateHandler(mHandler);
+        mMediaLibrary.nativeResumeBackgroundOperations();
         final boolean refresh = mVideoAdapter.isEmpty() && !mMediaLibrary.isWorking();
         // We don't animate while medialib is scanning. Because gridview is being populated.
         // That would lead to graphical glitches
@@ -388,15 +390,15 @@ public class VideoGridFragment extends MediaBrowserFragment implements ISortable
     public void updateList() {
         if (!mSwipeRefreshLayout.isRefreshing())
             mSwipeRefreshLayout.setRefreshing(true);
-        final List<MediaWrapper> itemList = mMediaLibrary.getVideoItems();
+                final MediaWrapper[] itemList = mMediaLibrary.nativeGetVideos();
 
-        if (itemList.size() > 0) {
+        if (itemList.length > 0) {
             VLCApplication.runBackground(new Runnable() {
                 @Override
                 public void run() {
                     final ArrayList<MediaWrapper> displayList = new ArrayList<>();
                     final ArrayList<MediaWrapper> jobsList = new ArrayList<>();
-                    if (mGroup != null || itemList.size() <= 10) {
+                    if (mGroup != null || itemList.length <= 10) {
                         for (MediaWrapper item : itemList) {
                             String title = item.getTitle().substring(item.getTitle().toLowerCase().startsWith("the") ? 4 : 0);
                             if (mGroup == null || title.toLowerCase().startsWith(mGroup.toLowerCase()))
@@ -539,7 +541,8 @@ public class VideoGridFragment extends MediaBrowserFragment implements ISortable
                 MediaDatabase.getInstance().removeMedia(media.getUri());
             }
         });
-        mMediaLibrary.getMediaItems().remove(media);
+        //TODO
+        //mMediaLibrary.getMediaItems().remove(media);
         if (mService != null) {
             final List<String> list = mService.getMediaLocations();
             if (list != null && list.contains(media.getLocation())) {

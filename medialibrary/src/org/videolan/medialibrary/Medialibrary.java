@@ -43,6 +43,14 @@ public class Medialibrary {
         return mInstanceID;
     }
 
+    public boolean isWorking() {
+        return nativeIsWorking();
+    }
+
+    public boolean increasePlayCount(long mediaId) {
+        return mediaId > 0 && nativeIncreasePlayCount(mediaId);
+    }
+
     public static void onMediaAdded(MediaWrapper[] mediaList) {
         for (MediaWrapper media : mediaList)
             Log.d(TAG, "onMediaAdded: "+media.getTitle());
@@ -77,4 +85,10 @@ public class Medialibrary {
     public native void nativeDiscover(String path);
     public native MediaWrapper[] nativeGetVideos();
     public native MediaWrapper[] nativeGetAudio();
+    public native  boolean nativeIsWorking();
+    public native void nativePauseBackgroundOperations();
+    public native void nativeResumeBackgroundOperations();
+    public native void nativeReload();
+    public native void nativeReload(String entryPoint);
+    private native boolean nativeIncreasePlayCount(long mediaId);
 }

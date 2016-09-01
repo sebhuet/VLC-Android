@@ -31,6 +31,7 @@ import android.support.design.widget.TabLayout;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.KeyEvent;
@@ -53,6 +54,7 @@ import android.widget.TextView;
 import org.videolan.libvlc.Media;
 import org.videolan.libvlc.util.AndroidUtil;
 import org.videolan.libvlc.util.MediaBrowser;
+import org.videolan.medialibrary.Medialibrary;
 import org.videolan.vlc.R;
 import org.videolan.vlc.VLCApplication;
 import org.videolan.vlc.gui.MainActivity;
@@ -247,8 +249,9 @@ public class AudioBrowserFragment extends MediaBrowserFragment implements SwipeR
         super.onPause();
 
         mViewPager.removeOnPageChangeListener(this);
-        mMediaLibrary.removeUpdateHandler(mHandler);
-        mMediaLibrary.setBrowser(null);
+        //TODO
+//        mMediaLibrary.removeUpdateHandler(mHandler);
+//        mMediaLibrary.setBrowser(null);
         if (mMediaBrowser != null) {
             mMediaBrowser.release();
             mMediaBrowser = null;
@@ -270,8 +273,9 @@ public class AudioBrowserFragment extends MediaBrowserFragment implements SwipeR
             updateEmptyView(mViewPager.getCurrentItem());
             updatePlaylists();
         }
-        mMediaLibrary.addUpdateHandler(mHandler);
-        mMediaLibrary.setBrowser(this);
+        //TODO
+//        mMediaLibrary.addUpdateHandler(mHandler);
+//        mMediaLibrary.setBrowser(this);
         final ListView current = (ListView)mLists.get(mViewPager.getCurrentItem());
         current.post(new Runnable() {
             @Override
@@ -708,7 +712,8 @@ public class AudioBrowserFragment extends MediaBrowserFragment implements SwipeR
                 final String path = mw.getUri().getPath();
                 FileUtils.deleteFile(path);
                 MediaDatabase.getInstance().removeMedia(mw.getUri());
-                mMediaLibrary.getMediaItems().remove(mw);
+                //TODO
+//                mMediaLibrary.getMediaItems().remove(mw);
                 mHandler.post(new Runnable() {
                     @Override
                     public void run() {
@@ -727,7 +732,8 @@ public class AudioBrowserFragment extends MediaBrowserFragment implements SwipeR
             public void run() {
                 if (!MediaDatabase.getInstance().playlistExists(listItem.mTitle)) { //File playlist
                     MediaWrapper media = listItem.mMediaList.get(0);
-                    mMediaLibrary.getMediaItems().remove(media);
+                    //TODO
+//                    mMediaLibrary.getMediaItems().remove(media);
                     FileUtils.deleteFile(media.getUri().getPath());
                     mHandler.obtainMessage(REFRESH, media.getLocation()).sendToTarget();
                 } else {
@@ -783,7 +789,14 @@ public class AudioBrowserFragment extends MediaBrowserFragment implements SwipeR
     }
 
     private void updateLists() {
-        mAudioList = MediaLibrary.getInstance().getAudioItems();
+//         ArrayList<MediaWrapper> audioItems = MediaLibrary.getInstance().getAudioItems();
+        final Medialibrary ml = Medialibrary.getInstance(VLCApplication.getAppContext());
+        MediaWrapper[] audioItems = ml.nativeGetAudio();
+        for (MediaWrapper mw : audioItems) {
+            Log.d(TAG, "run: song " + mw.getTitle());
+        }
+        mAudioList = new ArrayList<>(Arrays.asList(audioItems));
+//        mAudioList = audioItems;
         if (mAudioList.isEmpty()){
             updateEmptyView(mViewPager.getCurrentItem());
             mSwipeRefreshLayout.setRefreshing(false);
@@ -859,17 +872,18 @@ public class AudioBrowserFragment extends MediaBrowserFragment implements SwipeR
         }
     };
 
+    //TODO
     Runnable updatePlaylists = new Runnable() {
         @Override
         public void run() {
-            //DB playlists
-            ArrayList<AudioBrowserListAdapter.ListItem> dbPlaylists = mMediaLibrary.getPlaylistDbItems();
-            mPlaylistAdapter.addAllDBPlaylists(dbPlaylists);
-            //File playlists
-            ArrayList<MediaWrapper> playlists = mMediaLibrary.getPlaylistFilesItems();
-            mPlaylistAdapter.addAll(playlists, AudioBrowserListAdapter.TYPE_PLAYLISTS);
-
-            mAdaptersToNotify.add(mPlaylistAdapter);
+//            //DB playlists
+//            ArrayList<AudioBrowserListAdapter.ListItem> dbPlaylists = mMediaLibrary.getPlaylistDbItems();
+//            mPlaylistAdapter.addAllDBPlaylists(dbPlaylists);
+//            //File playlists
+//            ArrayList<MediaWrapper> playlists = mMediaLibrary.getPlaylistFilesItems();
+//            mPlaylistAdapter.addAll(playlists, AudioBrowserListAdapter.TYPE_PLAYLISTS);
+//
+//            mAdaptersToNotify.add(mPlaylistAdapter);
             if (mReadyToDisplay && !mDisplaying)
                 display();
         }

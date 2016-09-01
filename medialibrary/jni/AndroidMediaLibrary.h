@@ -23,6 +23,12 @@ public:
 
     void initDevices(const std::string& appDirPath, const std::string& libPath);
     void discover(const std::string&);
+    bool isWorking();
+    void pauseBackgroundOperations();
+    void resumeBackgroundOperations();
+    void reload();
+    void reload( const std::string& entryPoint );
+    bool increasePlayCount(int64_t mediaId);
     std::vector<medialibrary::MediaPtr> videoFiles( medialibrary::SortingCriteria sort = medialibrary::SortingCriteria::Default, bool desc = false );
     std::vector<medialibrary::MediaPtr> audioFiles( medialibrary::SortingCriteria sort = medialibrary::SortingCriteria::Default, bool desc = false );
 

@@ -4,6 +4,7 @@
 
 std::string mainStorage = "";
 bool discoveryEnded = false;
+uint32_t m_nbDiscovery = 0, m_progress = 0;
 
 AndroidMediaLibrary::AndroidMediaLibrary(JavaVM *vm, fields *ref_fields)
     : p_ml( NewMediaLibrary() ), myVm ( vm ), p_fields (ref_fields)
@@ -31,6 +32,42 @@ void
 AndroidMediaLibrary::discover(const std::string& libraryPath)
 {
     p_ml->discover(libraryPath);
+}
+
+bool
+AndroidMediaLibrary::isWorking()
+{
+    return /*m_nbDiscovery > 0 */discoveryEnded && m_progress < 100;
+}
+
+void
+AndroidMediaLibrary::pauseBackgroundOperations()
+{
+    p_ml->pauseBackgroundOperations();
+}
+
+void
+AndroidMediaLibrary::resumeBackgroundOperations()
+{
+    p_ml->resumeBackgroundOperations();
+}
+
+void
+AndroidMediaLibrary::reload()
+{
+    p_ml->reload();
+}
+
+void
+AndroidMediaLibrary::reload( const std::string& entryPoint )
+{
+    p_ml->reload(entryPoint);
+}
+
+bool
+AndroidMediaLibrary::increasePlayCount(int64_t mediaId)
+{
+    return p_ml->media(mediaId)->increasePlayCount();
 }
 
 std::vector<medialibrary::MediaPtr>
@@ -137,6 +174,7 @@ void AndroidMediaLibrary::onTracksDeleted( std::vector<int64_t> trackIds )
 
 void AndroidMediaLibrary::onDiscoveryStarted( const std::string& entryPoint )
 {
+    ++m_nbDiscovery;
     JNIEnv *env = getEnv();
     if (env == NULL)
         return;
@@ -151,6 +189,7 @@ void AndroidMediaLibrary::onDiscoveryStarted( const std::string& entryPoint )
 
 void AndroidMediaLibrary::onDiscoveryCompleted( const std::string& entryPoint )
 {
+    --m_nbDiscovery;
     JNIEnv *env = getEnv();
     if (env == NULL)
         return;
@@ -165,6 +204,7 @@ void AndroidMediaLibrary::onDiscoveryCompleted( const std::string& entryPoint )
 
 void AndroidMediaLibrary::onParsingStatsUpdated( uint32_t percent)
 {
+    m_progress = percent;
     if (!discoveryEnded)
         return;
     JNIEnv *env = getEnv();

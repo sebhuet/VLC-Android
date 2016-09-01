@@ -64,6 +64,7 @@ import org.videolan.libvlc.Media;
 import org.videolan.libvlc.MediaList;
 import org.videolan.libvlc.MediaPlayer;
 import org.videolan.libvlc.util.AndroidUtil;
+import org.videolan.medialibrary.Medialibrary;
 import org.videolan.vlc.gui.AudioPlayerContainerActivity;
 import org.videolan.vlc.gui.helpers.AudioUtil;
 import org.videolan.vlc.gui.preferences.PreferencesActivity;
@@ -131,6 +132,7 @@ public class PlaybackService extends Service implements IVLCVout.Callback {
     private SharedPreferences mSettings;
     private final IBinder mBinder = new LocalBinder();
     private MediaWrapperList mMediaList = new MediaWrapperList();
+    private Medialibrary mMedialibrary;
     private MediaPlayer mMediaPlayer;
     private boolean mParsed = false;
     private boolean mSeekable = false;
@@ -218,6 +220,7 @@ public class PlaybackService extends Service implements IVLCVout.Callback {
             return;
         }
 
+        mMedialibrary = Medialibrary.getInstance(this);
         if (!AndroidDevices.hasTsp() && !AndroidDevices.hasPlayServices())
             AndroidDevices.setRemoteControlReceiverEnabled(true);
 
@@ -1725,6 +1728,7 @@ public class PlaybackService extends Service implements IVLCVout.Callback {
                 setRate(mSettings.getFloat(PreferencesActivity.KEY_AUDIO_PLAYBACK_RATE, 1.0F), true);
             mMediaPlayer.play();
 
+            mMedialibrary.increasePlayCount(mw .getId());
             determinePrevAndNextIndices();
             if (mSettings.getBoolean(PreferencesFragment.PLAYBACK_HISTORY, true))
                 VLCApplication.runBackground(new Runnable() {

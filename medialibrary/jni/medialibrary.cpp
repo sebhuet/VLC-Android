@@ -53,6 +53,48 @@ discover(JNIEnv* env, jobject thiz, jstring mediaPath )
     env->ReleaseStringUTFChars(mediaPath, path);
 }
 
+jboolean
+isWorking(JNIEnv* env, jobject thiz)
+{
+    AndroidMediaLibrary *aml = MediaLibrary_getInstance(env, thiz);
+    return (jboolean) aml->isWorking();
+}
+
+void pauseBackgroundOperations(JNIEnv* env, jobject thiz)
+{
+    AndroidMediaLibrary *aml = MediaLibrary_getInstance(env, thiz);
+    aml->pauseBackgroundOperations();
+}
+
+void resumeBackgroundOperations(JNIEnv* env, jobject thiz)
+{
+    AndroidMediaLibrary *aml = MediaLibrary_getInstance(env, thiz);
+    aml->resumeBackgroundOperations();
+}
+
+void reload(JNIEnv* env, jobject thiz)
+{
+    AndroidMediaLibrary *aml = MediaLibrary_getInstance(env, thiz);
+    aml->reload();
+}
+
+jstring
+reloadEntryPoint(JNIEnv* env, jobject thiz, jstring entryPoint)
+{
+    AndroidMediaLibrary *aml = MediaLibrary_getInstance(env, thiz);
+    const char *path = env->GetStringUTFChars(entryPoint, JNI_FALSE);
+    const std::string& stringPath(path);
+    aml->reload(stringPath);
+    env->ReleaseStringUTFChars(entryPoint, path);
+}
+
+jboolean
+increasePlayCount(JNIEnv* env, jobject thiz, jlong id)
+{
+    AndroidMediaLibrary *aml = MediaLibrary_getInstance(env, thiz);
+    return aml->increasePlayCount((int64_t)id);
+}
+
 jobjectArray
 getVideos(JNIEnv* env, jobject thiz)
 {
@@ -91,6 +133,12 @@ static JNINativeMethod methods[] = {
     {"nativeDiscover", "(Ljava/lang/String;)V", (void*)discover },
     {"nativeGetVideos", "()[Lorg/videolan/medialibrary/media/MediaWrapper;", (void*)getVideos },
     {"nativeGetAudio", "()[Lorg/videolan/medialibrary/media/MediaWrapper;", (void*)getAudio },
+    {"nativeIsWorking", "()Z", (void*)isWorking },
+    {"nativePauseBackgroundOperations", "()V", (void*)pauseBackgroundOperations },
+    {"nativeResumeBackgroundOperations", "()V", (void*)resumeBackgroundOperations },
+    {"nativeReload", "()V", (void*)reload },
+    {"nativeReload", "(Ljava/lang/String;)V", (void*)reloadEntryPoint },
+    {"nativeIncreasePlayCount", "(J)Z", (void*)increasePlayCount },
 };
 
 jint JNI_OnLoad(JavaVM *vm, void *reserved)
