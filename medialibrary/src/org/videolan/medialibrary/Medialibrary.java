@@ -70,6 +70,10 @@ public class Medialibrary {
          Log.d(TAG, "onDiscoveryStarted: "+entryPoint);
     }
 
+    public static void onDiscoveryProgress(String entryPoint) {
+         Log.d(TAG, "onDiscoveryProgress: "+entryPoint);
+    }
+
     public static void onDiscoveryCompleted(String entryPoint) {
          Log.d(TAG, "onDiscoveryCompleted: "+entryPoint);
     }

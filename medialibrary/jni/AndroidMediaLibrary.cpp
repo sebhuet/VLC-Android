@@ -187,6 +187,17 @@ void AndroidMediaLibrary::onDiscoveryStarted( const std::string& entryPoint )
     env->DeleteLocalRef(ep);
 }
 
+void AndroidMediaLibrary::onDiscoveryProgress( const std::string& entryPoint )
+{
+    JNIEnv *env = getEnv();
+    if (env == NULL)
+        return;
+    jstring ep = env->NewStringUTF(entryPoint.c_str());
+    env->CallStaticVoidMethod(p_fields->MediaLibrary.clazz, p_fields->MediaLibrary.onDiscoveryProgressId, ep);
+    env->DeleteLocalRef(ep);
+
+}
+
 void AndroidMediaLibrary::onDiscoveryCompleted( const std::string& entryPoint )
 {
     --m_nbDiscovery;

@@ -206,6 +206,10 @@ jint JNI_OnLoad(JavaVM *vm, void *reserved)
            ml_fields.MediaLibrary.clazz,
            "onDiscoveryStarted", "(Ljava/lang/String;)V");
     GET_ID(GetStaticMethodID,
+           ml_fields.MediaLibrary.onDiscoveryProgressId,
+           ml_fields.MediaLibrary.clazz,
+           "onDiscoveryProgress", "(Ljava/lang/String;)V");
+    GET_ID(GetStaticMethodID,
            ml_fields.MediaLibrary.onDiscoveryCompletedId,
            ml_fields.MediaLibrary.clazz,
            "onDiscoveryCompleted", "(Ljava/lang/String;)V");

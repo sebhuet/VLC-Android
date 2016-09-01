@@ -48,6 +48,7 @@ struct fields {
         jmethodID onTracksAddedId;
         jmethodID onTracksDeletedId;
         jmethodID onDiscoveryStartedId;
+        jmethodID onDiscoveryProgressId;
         jmethodID onDiscoveryCompletedId;
         jmethodID onParsingStatsUpdatedId;
     } MediaLibrary;

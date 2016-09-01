@@ -47,6 +47,7 @@ public:
     void onTracksAdded( std::vector<medialibrary::AlbumTrackPtr> tracks );
     void onTracksDeleted( std::vector<int64_t> trackIds );
     void onDiscoveryStarted( const std::string& entryPoint );
+    void onDiscoveryProgress( const std::string& entryPoint );
     void onDiscoveryCompleted( const std::string& entryPoint );
     void onParsingStatsUpdated( uint32_t percent);
 
