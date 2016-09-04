@@ -18,7 +18,7 @@
 class AndroidMediaLibrary : public medialibrary::IMediaLibraryCb
 {
 public:
-    AndroidMediaLibrary(JavaVM *vm, fields *ref_fields);
+    AndroidMediaLibrary(JavaVM *vm, fields *ref_fields, jobject thiz);
     ~AndroidMediaLibrary();
 
     void initDevices(const std::string& appDirPath, const std::string& libPath);
@@ -56,6 +56,7 @@ private:
     void DetachCurrentThread();
 
     JavaVM *myVm;
+    jweak weak_thiz;
     fields *p_fields;
     medialibrary::IMediaLibrary* p_ml;
     std::shared_ptr<AndroidDeviceLister> p_lister;

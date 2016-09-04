@@ -9,6 +9,7 @@
 
 static JavaVM *myVm;
 fields ml_fields;
+bool m_IsInitialized = false;
 
 #define CLASSPATHNAME "org/videolan/medialibrary/Medialibrary"
 
@@ -28,11 +29,12 @@ init(JNIEnv* env, jobject thiz, jstring appPath, jstring libraryPath )
     const char *libPath = env->GetStringUTFChars(libraryPath, JNI_FALSE);
     const std::string& stringPath(path);
     const std::string& stringLibPath(libPath);
-    AndroidMediaLibrary *aml = new  AndroidMediaLibrary(myVm, &ml_fields);
+    AndroidMediaLibrary *aml = new  AndroidMediaLibrary(myVm, &ml_fields, thiz);
     MediaLibrary_setInstance(env, thiz, aml);
     aml->initDevices(stringPath, stringLibPath);
     env->ReleaseStringUTFChars(appPath, path);
     env->ReleaseStringUTFChars(libraryPath, libPath);
+    m_IsInitialized = true;
 }
 
 void release(JNIEnv* env, jobject thiz)
@@ -72,13 +74,14 @@ void resumeBackgroundOperations(JNIEnv* env, jobject thiz)
     aml->resumeBackgroundOperations();
 }
 
-void reload(JNIEnv* env, jobject thiz)
+void
+reload(JNIEnv* env, jobject thiz)
 {
     AndroidMediaLibrary *aml = MediaLibrary_getInstance(env, thiz);
     aml->reload();
 }
 
-jstring
+void
 reloadEntryPoint(JNIEnv* env, jobject thiz, jstring entryPoint)
 {
     AndroidMediaLibrary *aml = MediaLibrary_getInstance(env, thiz);
@@ -189,31 +192,31 @@ jint JNI_OnLoad(JavaVM *vm, void *reserved)
            ml_fields.MediaLibrary.clazz,
            "mInstanceID", "J");
 
-    GET_ID(GetStaticMethodID,
+    GET_ID(GetMethodID,
            ml_fields.MediaLibrary.onMediaAddedId,
            ml_fields.MediaLibrary.clazz,
            "onMediaAdded", "([Lorg/videolan/medialibrary/media/MediaWrapper;)V");
-    GET_ID(GetStaticMethodID,
+    GET_ID(GetMethodID,
            ml_fields.MediaLibrary.onMediaUpdatedId,
            ml_fields.MediaLibrary.clazz,
            "onMediaUpdated", "([Lorg/videolan/medialibrary/media/MediaWrapper;)V");
-    GET_ID(GetStaticMethodID,
+    GET_ID(GetMethodID,
            ml_fields.MediaLibrary.onMediaDeletedId,
            ml_fields.MediaLibrary.clazz,
            "onMediaDeleted", "([J)V");
-    GET_ID(GetStaticMethodID,
+    GET_ID(GetMethodID,
            ml_fields.MediaLibrary.onDiscoveryStartedId,
            ml_fields.MediaLibrary.clazz,
            "onDiscoveryStarted", "(Ljava/lang/String;)V");
-    GET_ID(GetStaticMethodID,
+    GET_ID(GetMethodID,
            ml_fields.MediaLibrary.onDiscoveryProgressId,
            ml_fields.MediaLibrary.clazz,
            "onDiscoveryProgress", "(Ljava/lang/String;)V");
-    GET_ID(GetStaticMethodID,
+    GET_ID(GetMethodID,
            ml_fields.MediaLibrary.onDiscoveryCompletedId,
            ml_fields.MediaLibrary.clazz,
            "onDiscoveryCompleted", "(Ljava/lang/String;)V");
-    GET_ID(GetStaticMethodID,
+    GET_ID(GetMethodID,
            ml_fields.MediaLibrary.onParsingStatsUpdatedId,
            ml_fields.MediaLibrary.clazz,
            "onParsingStatsUpdated", "(I)V");

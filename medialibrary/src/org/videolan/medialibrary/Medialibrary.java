@@ -51,34 +51,34 @@ public class Medialibrary {
         return mediaId > 0 && nativeIncreasePlayCount(mediaId);
     }
 
-    public static void onMediaAdded(MediaWrapper[] mediaList) {
+    public void onMediaAdded(MediaWrapper[] mediaList) {
         for (MediaWrapper media : mediaList)
             Log.d(TAG, "onMediaAdded: "+media.getTitle());
     }
 
-    public static void onMediaUpdated(MediaWrapper[] mediaList) {
+    public void onMediaUpdated(MediaWrapper[] mediaList) {
         for (MediaWrapper media : mediaList)
             Log.d(TAG, "onMediaUpdated: "+media.getTitle());
     }
 
-    public static void onMediaDeleted(long[] ids) {
+    public void onMediaDeleted(long[] ids) {
         for (long id : ids)
             Log.d(TAG, "onMediaDeleted: "+id);
     }
 
-    public static void onDiscoveryStarted(String entryPoint) {
+    public void onDiscoveryStarted(String entryPoint) {
          Log.d(TAG, "onDiscoveryStarted: "+entryPoint);
     }
 
-    public static void onDiscoveryProgress(String entryPoint) {
+    public void onDiscoveryProgress(String entryPoint) {
          Log.d(TAG, "onDiscoveryProgress: "+entryPoint);
     }
 
-    public static void onDiscoveryCompleted(String entryPoint) {
+    public void onDiscoveryCompleted(String entryPoint) {
          Log.d(TAG, "onDiscoveryCompleted: "+entryPoint);
     }
 
-    public static void onParsingStatsUpdated(int percent) {
+    public void onParsingStatsUpdated(int percent) {
          Log.d(TAG, "onParsingStatsUpdated: "+percent);
     }
 
