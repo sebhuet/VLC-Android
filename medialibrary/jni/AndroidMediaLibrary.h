@@ -22,8 +22,11 @@ public:
     ~AndroidMediaLibrary();
 
     void initDevices(const std::string& appDirPath, const std::string& libPath);
+    void banFolder(const std::string& path);
     void discover(const std::string&);
     bool isWorking();
+    void setMediaUpdatedCbFlag(int flags);
+    void setMediaAddedCbFlag(int flags);
     void pauseBackgroundOperations();
     void resumeBackgroundOperations();
     void reload();

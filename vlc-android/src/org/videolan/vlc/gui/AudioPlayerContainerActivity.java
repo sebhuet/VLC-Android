@@ -44,6 +44,7 @@ import android.widget.TextView;
 
 import com.android.widget.SlidingPaneLayout;
 
+import org.videolan.medialibrary.Medialibrary;
 import org.videolan.vlc.BuildConfig;
 import org.videolan.vlc.PlaybackService;
 import org.videolan.vlc.R;
@@ -52,10 +53,8 @@ import org.videolan.vlc.gui.audio.AudioPlayer;
 import org.videolan.vlc.gui.browser.MediaBrowserFragment;
 import org.videolan.vlc.gui.helpers.UiTools;
 import org.videolan.vlc.interfaces.IRefreshable;
-import org.videolan.vlc.media.MediaLibrary;
 import org.videolan.vlc.media.MediaUtils;
 import org.videolan.vlc.util.Strings;
-import org.videolan.vlc.util.Util;
 import org.videolan.vlc.util.WeakHandler;
 
 public class AudioPlayerContainerActivity extends AppCompatActivity implements PlaybackService.Client.Callback  {
@@ -166,7 +165,7 @@ public class AudioPlayerContainerActivity extends AppCompatActivity implements P
         if (current != null && current instanceof IRefreshable)
             ((IRefreshable) current).refresh();
         else
-            MediaLibrary.getInstance().scanMediaItems();
+            Medialibrary.getInstance(this).nativeReload();
         Fragment fragment = fm.findFragmentByTag(ID_AUDIO);
         if (fragment != null && !fragment.equals(current)) {
             ((MediaBrowserFragment)fragment).clear();
@@ -334,9 +333,9 @@ public class AudioPlayerContainerActivity extends AppCompatActivity implements P
     protected void onPanelOpenedUiSet() {}
 
     private void stopBackgroundTasks() {
-        MediaLibrary ml = MediaLibrary.getInstance();
+        Medialibrary ml = Medialibrary.getInstance(this);
         if (ml.isWorking())
-            ml.stop();
+            ml.nativePauseBackgroundOperations();
     }
 
     private final BroadcastReceiver storageReceiver = new BroadcastReceiver() {

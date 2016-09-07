@@ -65,6 +65,7 @@ import android.widget.TextView;
 
 import org.videolan.libvlc.util.AndroidUtil;
 import org.videolan.medialibrary.Medialibrary;
+import org.videolan.medialibrary.interfaces.DevicesDiscoveryCb;
 import org.videolan.vlc.BuildConfig;
 import org.videolan.vlc.PlaybackService;
 import org.videolan.vlc.R;
@@ -99,7 +100,7 @@ import org.videolan.vlc.util.WeakHandler;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AudioPlayerContainerActivity implements FilterQueryProvider, NavigationView.OnNavigationItemSelectedListener, ExtensionManagerService.ExtensionManagerActivity {
+public class MainActivity extends AudioPlayerContainerActivity implements DevicesDiscoveryCb, FilterQueryProvider, NavigationView.OnNavigationItemSelectedListener, ExtensionManagerService.ExtensionManagerActivity {
     public final static String TAG = "VLC/MainActivity";
 
     private static final String PREF_FIRST_RUN = "first_run";
@@ -111,6 +112,7 @@ public class MainActivity extends AudioPlayerContainerActivity implements Filter
     private static final int ACTIVITY_SHOW_PROGRESSBAR = 3;
     private static final int ACTIVITY_HIDE_PROGRESSBAR = 4;
     private static final int ACTIVITY_SHOW_TEXTINFO = 5;
+    private static final int ACTIVITY_UPDATE_PROGRESS = 6;
 
 
     Medialibrary mMediaLibrary;
@@ -281,6 +283,7 @@ public class MainActivity extends AudioPlayerContainerActivity implements Filter
           //Deactivated for now
 //        createExtensionServiceConnection();
 
+        mMediaLibrary.setDeviceDiscoveryCb(this);
         mNavigationView.setNavigationItemSelectedListener(this);
         clearBackstackFromClass(ExtensionBrowser.class);
     }
@@ -288,6 +291,7 @@ public class MainActivity extends AudioPlayerContainerActivity implements Filter
     @Override
     protected void onStop() {
         super.onStop();
+        mMediaLibrary.setDeviceDiscoveryCb(null);
         mNavigationView.setNavigationItemSelectedListener(null);
         if (mExtensionServiceConnection != null) {
             unbindService(mExtensionServiceConnection);
@@ -776,13 +780,18 @@ public class MainActivity extends AudioPlayerContainerActivity implements Filter
                     ma.mInfoProgress.setVisibility(View.GONE);
                     ma.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
                     break;
-                case ACTIVITY_SHOW_TEXTINFO:
-                    String info = (String) msg.obj;
+                case ACTIVITY_UPDATE_PROGRESS:
+                    if (ma.mInfoProgress.getVisibility() != View.VISIBLE)
+                        ma.mInfoProgress.setVisibility(View.VISIBLE);
                     int max = msg.arg1;
                     int progress = msg.arg2;
-                    ma.mInfoText.setText(info);
                     ma.mInfoProgress.setMax(max);
                     ma.mInfoProgress.setProgress(progress);
+                    ma.mInfoText.setText("");
+                    break;
+                case ACTIVITY_SHOW_TEXTINFO:
+                    String info = (String) msg.obj;
+                    ma.mInfoText.setText(info);
 
                     if (info == null) {
                     /* Cancel any upcoming visibility change */
@@ -812,6 +821,25 @@ public class MainActivity extends AudioPlayerContainerActivity implements Filter
 
     public void clearTextInfo() {
         mHandler.obtainMessage(ACTIVITY_SHOW_TEXTINFO, 0, 100, null).sendToTarget();
+    }
+
+    @Override
+    public void onDiscoveryStarted(String entryPoint) {}
+
+    @Override
+    public void onDiscoveryProgress(String entryPoint) {
+        mHandler.obtainMessage(ACTIVITY_SHOW_TEXTINFO, entryPoint).sendToTarget();
+    }
+
+    @Override
+    public void onDiscoveryCompleted(String entryPoint) {}
+
+    @Override
+    public void onParsingStatsUpdated(int percent) {
+        if (percent < 100)
+            mHandler.obtainMessage(ACTIVITY_UPDATE_PROGRESS, 100, percent).sendToTarget();
+        else
+            mHandler.obtainMessage(ACTIVITY_SHOW_TEXTINFO, null).sendToTarget();
     }
 
     protected void onPanelClosedUiSet() {

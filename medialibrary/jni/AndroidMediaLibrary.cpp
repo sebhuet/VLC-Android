@@ -2,9 +2,15 @@
 #define LOG_TAG "VLC/JNI/AndroidMediaLibrary"
 #include "log.h"
 
+#define FLAG_MEDIA_UPDATED_AUDIO 1 << 0
+#define FLAG_MEDIA_UPDATED_VIDEO 1 << 1
+#define FLAG_MEDIA_ADDED_AUDIO   1 << 2
+#define FLAG_MEDIA_ADDED_VIDEO   1 << 3
+
+
 std::string mainStorage = "";
 bool discoveryEnded = false;
-uint32_t m_nbDiscovery = 0, m_progress = 0;
+uint32_t m_nbDiscovery = 0, m_progress = 0, m_mediaAddedType = 0, m_mediaUpdatedType = 0;
 
 AndroidMediaLibrary::AndroidMediaLibrary(JavaVM *vm, fields *ref_fields, jobject thiz)
     : p_ml( NewMediaLibrary() ), myVm ( vm ), p_fields (ref_fields)
@@ -33,6 +39,12 @@ AndroidMediaLibrary::initDevices(const std::string& appDirPath, const std::strin
 }
 
 void
+AndroidMediaLibrary::banFolder(const std::string& path)
+{
+    p_ml->banFolder(path);
+}
+
+void
 AndroidMediaLibrary::discover(const std::string& libraryPath)
 {
     p_ml->discover(libraryPath);
@@ -41,13 +53,25 @@ AndroidMediaLibrary::discover(const std::string& libraryPath)
 bool
 AndroidMediaLibrary::isWorking()
 {
-    return /*m_nbDiscovery > 0 */discoveryEnded && m_progress < 100;
+    return m_nbDiscovery > 0 && m_progress < 100;
 }
 
 void
 AndroidMediaLibrary::pauseBackgroundOperations()
 {
     p_ml->pauseBackgroundOperations();
+}
+
+void
+AndroidMediaLibrary::setMediaUpdatedCbFlag(int flags)
+{
+    m_mediaUpdatedType = flags;
+}
+
+void
+AndroidMediaLibrary::setMediaAddedCbFlag(int flags)
+{
+    m_mediaAddedType = flags;
 }
 
 void
@@ -101,35 +125,47 @@ AndroidMediaLibrary::audioFiles( medialibrary::SortingCriteria sort, bool desc )
 void
 AndroidMediaLibrary::onMediaAdded( std::vector<medialibrary::MediaPtr> mediaList )
 {
-    JNIEnv *env = getEnv();
-    if (env == NULL || env->IsSameObject(weak_thiz, NULL))
-        return;
-    jobjectArray mediaRefs = (jobjectArray) env->NewObjectArray(mediaList.size(), p_fields->MediaWrapper.clazz, NULL);
-    int index = -1;
-    for (medialibrary::MediaPtr const& media : mediaList) {
-        jobject item = mediaToMediaWrapper(env, p_fields, media);
-        env->SetObjectArrayElement(mediaRefs, ++index, item);
-        env->DeleteLocalRef(item);
+    if (m_mediaAddedType & FLAG_MEDIA_ADDED_AUDIO || m_mediaAddedType & FLAG_MEDIA_ADDED_VIDEO) {
+        JNIEnv *env = getEnv();
+        if (env == NULL /*|| env->IsSameObject(weak_thiz, NULL)*/)
+            return;
+        jobjectArray mediaRefs = (jobjectArray) env->NewObjectArray(mediaList.size(), p_fields->MediaWrapper.clazz, NULL);
+        int index = -1;
+        for (medialibrary::MediaPtr const& media : mediaList) {
+            medialibrary::IMedia::Type type = media->type();
+            if (!(type == medialibrary::IMedia::Type::AudioType && m_mediaAddedType & FLAG_MEDIA_ADDED_AUDIO ||
+                    type == medialibrary::IMedia::Type::VideoType && m_mediaAddedType & FLAG_MEDIA_ADDED_VIDEO))
+                continue;
+            jobject item = mediaToMediaWrapper(env, p_fields, media);
+            env->SetObjectArrayElement(mediaRefs, ++index, item);
+            env->DeleteLocalRef(item);
+        }
+        env->CallVoidMethod(weak_thiz, p_fields->MediaLibrary.onMediaAddedId, mediaRefs);
+        env->DeleteLocalRef(mediaRefs);
     }
-    env->CallVoidMethod(weak_thiz, p_fields->MediaLibrary.onMediaAddedId, mediaRefs);
-    env->DeleteLocalRef(mediaRefs);
 }
 
 void AndroidMediaLibrary::onMediaUpdated( std::vector<medialibrary::MediaPtr> mediaList )
 {
-    JNIEnv *env = getEnv();
-    if (env == NULL || env->IsSameObject(weak_thiz, NULL))
-        return;
-    jobjectArray mediaRefs = (jobjectArray) env->NewObjectArray(mediaList.size(), p_fields->MediaWrapper.clazz, NULL);
-    int index = -1;
-    for (medialibrary::MediaPtr const& media : mediaList) {
-        jobject item = mediaToMediaWrapper(env, p_fields, media);
-
-        env->SetObjectArrayElement(mediaRefs, ++index, item);
-        env->DeleteLocalRef(item);
+    if (m_mediaUpdatedType & FLAG_MEDIA_UPDATED_AUDIO || m_mediaUpdatedType & FLAG_MEDIA_UPDATED_VIDEO) {
+        JNIEnv *env = getEnv();
+        if (env == NULL /*|| env->IsSameObject(weak_thiz, NULL)*/)
+            return;
+        jobjectArray mediaRefs = (jobjectArray) env->NewObjectArray(mediaList.size(), p_fields->MediaWrapper.clazz, NULL);
+        int index = -1;
+        for (medialibrary::MediaPtr const& media : mediaList) {
+            medialibrary::IMedia::Type type = media->type();
+            if (!(type == medialibrary::IMedia::Type::AudioType && m_mediaUpdatedType & FLAG_MEDIA_UPDATED_AUDIO ||
+                    type == medialibrary::IMedia::Type::VideoType && m_mediaUpdatedType & FLAG_MEDIA_UPDATED_VIDEO))
+                continue;
+            jobject item = mediaToMediaWrapper(env, p_fields, media);
+            env->SetObjectArrayElement(mediaRefs, ++index, item);
+            env->DeleteLocalRef(item);
+        }
+        if (index > -1)
+            env->CallVoidMethod(weak_thiz, p_fields->MediaLibrary.onMediaUpdatedId, mediaRefs);
+        env->DeleteLocalRef(mediaRefs);
     }
-    env->CallVoidMethod(weak_thiz, p_fields->MediaLibrary.onMediaUpdatedId, mediaRefs);
-    env->DeleteLocalRef(mediaRefs);
 }
 
 void AndroidMediaLibrary::onMediaDeleted( std::vector<int64_t> ids )

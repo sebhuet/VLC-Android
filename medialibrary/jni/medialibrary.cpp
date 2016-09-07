@@ -46,6 +46,16 @@ void release(JNIEnv* env, jobject thiz)
 }
 
 void
+banFolder(JNIEnv* env, jobject thiz, jstring folderPath )
+{
+    AndroidMediaLibrary *aml = MediaLibrary_getInstance(env, thiz);
+    const char *path = env->GetStringUTFChars(folderPath, JNI_FALSE);
+    const std::string& stringPath(path);
+    aml->banFolder(stringPath);
+    env->ReleaseStringUTFChars(folderPath, path);
+}
+
+void
 discover(JNIEnv* env, jobject thiz, jstring mediaPath )
 {
     AndroidMediaLibrary *aml = MediaLibrary_getInstance(env, thiz);
@@ -61,14 +71,29 @@ isWorking(JNIEnv* env, jobject thiz)
     AndroidMediaLibrary *aml = MediaLibrary_getInstance(env, thiz);
     return (jboolean) aml->isWorking();
 }
+void
+setMediaUpdatedCbFlag(JNIEnv* env, jobject thiz, jint flags)
+{
+    AndroidMediaLibrary *aml = MediaLibrary_getInstance(env, thiz);
+    aml->setMediaUpdatedCbFlag(flags);
+}
 
-void pauseBackgroundOperations(JNIEnv* env, jobject thiz)
+void
+setMediaAddedCbFlag(JNIEnv* env, jobject thiz, jint flags)
+{
+    AndroidMediaLibrary *aml = MediaLibrary_getInstance(env, thiz);
+    aml->setMediaAddedCbFlag(flags);
+}
+
+void
+pauseBackgroundOperations(JNIEnv* env, jobject thiz)
 {
     AndroidMediaLibrary *aml = MediaLibrary_getInstance(env, thiz);
     aml->pauseBackgroundOperations();
 }
 
-void resumeBackgroundOperations(JNIEnv* env, jobject thiz)
+void
+resumeBackgroundOperations(JNIEnv* env, jobject thiz)
 {
     AndroidMediaLibrary *aml = MediaLibrary_getInstance(env, thiz);
     aml->resumeBackgroundOperations();
@@ -134,6 +159,7 @@ static JNINativeMethod methods[] = {
     {"nativeInit", "(Ljava/lang/String;Ljava/lang/String;)V", (void*)init },
     {"nativeRelease", "()V", (void*)release },
     {"nativeDiscover", "(Ljava/lang/String;)V", (void*)discover },
+    {"nativeBanFolder", "(Ljava/lang/String;)V", (void*)banFolder },
     {"nativeGetVideos", "()[Lorg/videolan/medialibrary/media/MediaWrapper;", (void*)getVideos },
     {"nativeGetAudio", "()[Lorg/videolan/medialibrary/media/MediaWrapper;", (void*)getAudio },
     {"nativeIsWorking", "()Z", (void*)isWorking },
@@ -142,6 +168,8 @@ static JNINativeMethod methods[] = {
     {"nativeReload", "()V", (void*)reload },
     {"nativeReload", "(Ljava/lang/String;)V", (void*)reloadEntryPoint },
     {"nativeIncreasePlayCount", "(J)Z", (void*)increasePlayCount },
+    {"nativeSetMediaUpdatedCbFlag", "(I)V", (void*)setMediaUpdatedCbFlag },
+    {"nativeSetMediaAddedCbFlag", "(I)V", (void*)setMediaAddedCbFlag },
 };
 
 jint JNI_OnLoad(JavaVM *vm, void *reserved)

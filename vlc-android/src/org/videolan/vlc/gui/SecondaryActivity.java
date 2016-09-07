@@ -29,6 +29,8 @@ import android.support.v4.app.Fragment;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import org.videolan.medialibrary.Medialibrary;
+import org.videolan.medialibrary.media.MediaWrapper;
 import org.videolan.vlc.R;
 import org.videolan.vlc.VLCApplication;
 import org.videolan.vlc.gui.audio.AudioAlbumFragment;
@@ -41,8 +43,6 @@ import org.videolan.vlc.gui.video.MediaInfoFragment;
 import org.videolan.vlc.gui.video.VideoGridFragment;
 import org.videolan.vlc.gui.video.VideoListAdapter;
 import org.videolan.vlc.interfaces.ISortable;
-import org.videolan.vlc.media.MediaLibrary;
-import org.videolan.medialibrary.media.MediaWrapper;
 
 import java.util.ArrayList;
 
@@ -106,7 +106,7 @@ public class SecondaryActivity extends AudioPlayerContainerActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == ACTIVITY_RESULT_SECONDARY) {
             if (resultCode == PreferencesActivity.RESULT_RESCAN) {
-                MediaLibrary.getInstance().scanMediaItems(true);
+                Medialibrary.getInstance(this).nativeReload();
             }
         }
     }
@@ -137,8 +137,9 @@ public class SecondaryActivity extends AudioPlayerContainerActivity {
                 : VideoListAdapter.SORT_BY_LENGTH);
                 break;
             case R.id.ml_menu_refresh:
-                if (!MediaLibrary.getInstance().isWorking())
-                    MediaLibrary.getInstance().scanMediaItems(true);
+                Medialibrary ml = Medialibrary.getInstance(this);
+                if (!ml.isWorking())
+                    ml.nativeReload();
                 break;
         }
         return super.onOptionsItemSelected(item);

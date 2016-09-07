@@ -48,6 +48,8 @@ import android.widget.TextView;
 
 import org.videolan.libvlc.Media;
 import org.videolan.libvlc.util.AndroidUtil;
+import org.videolan.medialibrary.Medialibrary;
+import org.videolan.medialibrary.interfaces.MediaUpdatedCb;
 import org.videolan.medialibrary.media.MediaWrapper;
 import org.videolan.vlc.R;
 import org.videolan.vlc.VLCApplication;
@@ -64,14 +66,13 @@ import org.videolan.vlc.media.MediaDatabase;
 import org.videolan.vlc.media.MediaGroup;
 import org.videolan.vlc.media.MediaLibrary;
 import org.videolan.vlc.media.MediaUtils;
-import org.videolan.vlc.media.Thumbnailer;
 import org.videolan.vlc.util.FileUtils;
 import org.videolan.vlc.util.VLCInstance;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class VideoGridFragment extends MediaBrowserFragment implements ISortable, IVideoBrowser, SwipeRefreshLayout.OnRefreshListener {
+public class VideoGridFragment extends MediaBrowserFragment implements MediaUpdatedCb, ISortable, IVideoBrowser, SwipeRefreshLayout.OnRefreshListener {
 
     public final static String TAG = "VLC/VideoListFragment";
 
@@ -84,7 +85,6 @@ public class VideoGridFragment extends MediaBrowserFragment implements ISortable
     protected String mGroup;
 
     private VideoListAdapter mVideoAdapter;
-    private Thumbnailer mThumbnailer;
     private VideoGridAnimator mAnimator;
 
     private MainActivity mMainActivity;
@@ -102,8 +102,6 @@ public class VideoGridFragment extends MediaBrowserFragment implements ISortable
             setGroup(savedInstanceState.getString(KEY_GROUP));
         /* Load the thumbnailer */
         FragmentActivity activity = getActivity();
-        if (activity != null)
-            mThumbnailer = new Thumbnailer();
     }
 
     @Override
@@ -160,18 +158,16 @@ public class VideoGridFragment extends MediaBrowserFragment implements ISortable
     @Override
     public void onPause() {
         super.onPause();
+        mMediaLibrary.removeMediaUpdatedCb();
         //TODO
         //mMediaLibrary.setBrowser(null);
         //mMediaLibrary.removeUpdateHandler(mHandler);
-
-        /* Stop the thumbnailer */
-        if (mThumbnailer != null)
-            mThumbnailer.stop();
     }
 
     @Override
     public void onResume() {
         super.onResume();
+        mMediaLibrary.setMediaUpdatedCb(this, Medialibrary.FLAG_MEDIA_UPDATED_VIDEO);
         if (getActivity() instanceof MainActivity)
             mMainActivity = (MainActivity) getActivity();
         //mMediaLibrary.setBrowser(this);
@@ -209,8 +205,6 @@ public class VideoGridFragment extends MediaBrowserFragment implements ISortable
     @Override
     public void onDestroy() {
         super.onDestroy();
-        if (mThumbnailer != null)
-            mThumbnailer.clearJobs();
         mVideoAdapter.clear();
     }
 
@@ -380,6 +374,18 @@ public class VideoGridFragment extends MediaBrowserFragment implements ISortable
      */
     private Handler mHandler = new VideoListHandler(this);
 
+    @Override
+    public void onMediaUpdated(final MediaWrapper[] mediaList) {
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                for (MediaWrapper mw : mediaList)
+                    if (mw != null)
+                        updateItem(mw);
+            }
+        });
+    }
+
     public void updateItem(MediaWrapper item) {
         if (item.getType() != MediaWrapper.TYPE_VIDEO)
             return;
@@ -423,12 +429,6 @@ public class VideoGridFragment extends MediaBrowserFragment implements ISortable
                                 display();
                         }
                     });
-                    if (mThumbnailer != null && !jobsList.isEmpty()) {
-                        mThumbnailer.clearJobs();
-                        mThumbnailer.start(VideoGridFragment.this);
-                        for (MediaWrapper item : jobsList)
-                            mThumbnailer.addJob(item);
-                    }
                 }
             });
         }
@@ -511,8 +511,8 @@ public class VideoGridFragment extends MediaBrowserFragment implements ISortable
 
     @Override
     public void onRefresh() {
-        if (getActivity()!=null && !MediaLibrary.getInstance().isWorking())
-            MediaLibrary.getInstance().scanMediaItems(true);
+        if (getActivity()!=null && !Medialibrary.getInstance(VLCApplication.getAppContext()).isWorking())
+            Medialibrary.getInstance(VLCApplication.getAppContext()).nativeReload();
     }
 
     @Override

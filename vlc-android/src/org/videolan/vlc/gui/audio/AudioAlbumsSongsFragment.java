@@ -48,6 +48,8 @@ import android.widget.PopupMenu;
 import android.widget.PopupMenu.OnMenuItemClickListener;
 
 import org.videolan.libvlc.util.AndroidUtil;
+import org.videolan.medialibrary.Medialibrary;
+import org.videolan.medialibrary.media.MediaWrapper;
 import org.videolan.vlc.PlaybackService;
 import org.videolan.vlc.R;
 import org.videolan.vlc.VLCApplication;
@@ -62,7 +64,6 @@ import org.videolan.vlc.gui.view.SwipeRefreshLayout;
 import org.videolan.vlc.media.MediaDatabase;
 import org.videolan.vlc.media.MediaLibrary;
 import org.videolan.vlc.media.MediaUtils;
-import org.videolan.medialibrary.media.MediaWrapper;
 import org.videolan.vlc.util.AndroidDevices;
 import org.videolan.vlc.util.FileUtils;
 
@@ -75,8 +76,7 @@ public class AudioAlbumsSongsFragment extends PlaybackServiceFragment implements
 
     public final static String TAG = "VLC/AudioAlbumsSongsFragment";
 
-    private MediaLibrary mMediaLibrary;
-    private PlaybackService.Client mClient;
+    private Medialibrary mMediaLibrary;
     Handler mHandler = new Handler(Looper.getMainLooper());
 
     private SwipeRefreshLayout mSwipeRefreshLayout;
@@ -108,7 +108,7 @@ public class AudioAlbumsSongsFragment extends PlaybackServiceFragment implements
         mAlbumsAdapter.setContextPopupMenuListener(mContextPopupMenuListener);
         mSongsAdapter.setContextPopupMenuListener(mContextPopupMenuListener);
 
-        mMediaLibrary = MediaLibrary.getInstance();
+        mMediaLibrary = Medialibrary.getInstance(VLCApplication.getAppContext());
         if (savedInstanceState != null)
             setMediaList(savedInstanceState.<MediaWrapper>getParcelableArrayList("list"), savedInstanceState.getString("title"));
     }
@@ -393,7 +393,6 @@ public class AudioAlbumsSongsFragment extends PlaybackServiceFragment implements
     private void deleteMedia(final AudioBrowserListAdapter.ListItem listItem) {
         for (final MediaWrapper media : listItem.mMediaList) {
             mMediaList.remove(media);
-            mMediaLibrary.getMediaItems().remove(media);
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
@@ -404,6 +403,7 @@ public class AudioAlbumsSongsFragment extends PlaybackServiceFragment implements
             VLCApplication.runBackground(new Runnable() {
                 @Override
                 public void run() {
+                    mMediaLibrary.remove(media);
                     MediaDatabase.getInstance().removeMedia(media.getUri());
                     FileUtils.deleteFile(media.getUri().getPath());
                 }

@@ -50,6 +50,8 @@ import android.widget.ProgressBar;
 
 import org.videolan.libvlc.Media;
 import org.videolan.libvlc.MediaPlayer;
+import org.videolan.medialibrary.Medialibrary;
+import org.videolan.medialibrary.media.MediaWrapper;
 import org.videolan.vlc.PlaybackService;
 import org.videolan.vlc.R;
 import org.videolan.vlc.RecommendationsService;
@@ -67,7 +69,6 @@ import org.videolan.vlc.interfaces.IVideoBrowser;
 import org.videolan.vlc.media.MediaDatabase;
 import org.videolan.vlc.media.MediaLibrary;
 import org.videolan.vlc.media.MediaUtils;
-import org.videolan.medialibrary.media.MediaWrapper;
 import org.videolan.vlc.media.Thumbnailer;
 import org.videolan.vlc.util.AndroidDevices;
 import org.videolan.vlc.util.Permissions;
@@ -75,6 +76,7 @@ import org.videolan.vlc.util.Util;
 import org.videolan.vlc.util.VLCInstance;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
@@ -296,7 +298,7 @@ public class MainTvActivity extends BaseTvActivity implements IVideoBrowser, OnI
     public void updateList() {
         if (mVideoAdapter != null) {
             if (mVideoAdapter.size() == 0)
-                mVideoAdapter.addAll(0, MediaLibrary.getInstance().getVideoItems());
+                mVideoAdapter.addAll(0, Arrays.asList(Medialibrary.getInstance(this).nativeGetVideos()));
             mVideoAdapter.notifyArrayItemRangeChanged(0, mVideoAdapter.size());
         }
         checkThumbs();

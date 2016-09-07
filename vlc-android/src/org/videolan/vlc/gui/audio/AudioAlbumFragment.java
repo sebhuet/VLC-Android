@@ -47,6 +47,8 @@ import android.widget.ImageView;
 import android.widget.ListView;
 
 import org.videolan.libvlc.util.AndroidUtil;
+import org.videolan.medialibrary.Medialibrary;
+import org.videolan.medialibrary.media.MediaWrapper;
 import org.videolan.vlc.R;
 import org.videolan.vlc.VLCApplication;
 import org.videolan.vlc.gui.MainActivity;
@@ -56,8 +58,6 @@ import org.videolan.vlc.gui.dialogs.SavePlaylistDialog;
 import org.videolan.vlc.gui.helpers.AudioUtil;
 import org.videolan.vlc.gui.helpers.UiTools;
 import org.videolan.vlc.media.MediaDatabase;
-import org.videolan.vlc.media.MediaLibrary;
-import org.videolan.medialibrary.media.MediaWrapper;
 import org.videolan.vlc.util.AndroidDevices;
 import org.videolan.vlc.util.FileUtils;
 
@@ -255,7 +255,7 @@ public class AudioAlbumFragment extends PlaybackServiceFragment implements Adapt
                 final String path = mw.getUri().getPath();
                 FileUtils.deleteFile(path);
                 MediaDatabase.getInstance().removeMedia(mw.getUri());
-                MediaLibrary.getInstance().getMediaItems().remove(mw);
+                Medialibrary.getInstance(VLCApplication.getAppContext()).remove(mw);
                 mHandler.post(new Runnable() {
                     @Override
                     public void run() {

@@ -73,7 +73,7 @@ public class FileUtils {
     }
 
     public static String getParent(String path){
-        if (TextUtils.equals("/", path))
+        if (path == null || TextUtils.equals("/", path))
             return path;
         String parentPath = path;
         if (parentPath.endsWith("/"))
