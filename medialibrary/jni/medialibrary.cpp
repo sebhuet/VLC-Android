@@ -155,6 +155,16 @@ getAudio(JNIEnv* env, jobject thiz)
     return audioRefs;
 }
 
+jint
+getVideoCount(JNIEnv* env, jobject thiz) {
+    return MediaLibrary_getInstance(env, thiz)->videoFiles().size();
+}
+
+jint
+getAudioCount(JNIEnv* env, jobject thiz) {
+    return MediaLibrary_getInstance(env, thiz)->audioFiles().size();
+}
+
 static JNINativeMethod methods[] = {
     {"nativeInit", "(Ljava/lang/String;Ljava/lang/String;)V", (void*)init },
     {"nativeRelease", "()V", (void*)release },
@@ -162,6 +172,8 @@ static JNINativeMethod methods[] = {
     {"nativeBanFolder", "(Ljava/lang/String;)V", (void*)banFolder },
     {"nativeGetVideos", "()[Lorg/videolan/medialibrary/media/MediaWrapper;", (void*)getVideos },
     {"nativeGetAudio", "()[Lorg/videolan/medialibrary/media/MediaWrapper;", (void*)getAudio },
+    {"nativeGetVideoCount", "()I", (void*)getVideoCount },
+    {"nativeGetAudioCount", "()I", (void*)getAudioCount },
     {"nativeIsWorking", "()Z", (void*)isWorking },
     {"nativePauseBackgroundOperations", "()V", (void*)pauseBackgroundOperations },
     {"nativeResumeBackgroundOperations", "()V", (void*)resumeBackgroundOperations },

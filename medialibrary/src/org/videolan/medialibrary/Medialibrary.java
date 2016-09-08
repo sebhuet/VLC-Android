@@ -144,6 +144,8 @@ public class Medialibrary {
     public native void nativeDiscover(String path);
     public native MediaWrapper[] nativeGetVideos();
     public native MediaWrapper[] nativeGetAudio();
+    public native int nativeGetVideoCount();
+    public native int nativeGetAudioCount();
     public native  boolean nativeIsWorking();
     public native void nativePauseBackgroundOperations();
     public native void nativeResumeBackgroundOperations();

@@ -51,6 +51,7 @@ import android.widget.ProgressBar;
 import org.videolan.libvlc.Media;
 import org.videolan.libvlc.MediaPlayer;
 import org.videolan.medialibrary.Medialibrary;
+import org.videolan.medialibrary.interfaces.MediaUpdatedCb;
 import org.videolan.medialibrary.media.MediaWrapper;
 import org.videolan.vlc.PlaybackService;
 import org.videolan.vlc.R;
@@ -69,7 +70,6 @@ import org.videolan.vlc.interfaces.IVideoBrowser;
 import org.videolan.vlc.media.MediaDatabase;
 import org.videolan.vlc.media.MediaLibrary;
 import org.videolan.vlc.media.MediaUtils;
-import org.videolan.vlc.media.Thumbnailer;
 import org.videolan.vlc.util.AndroidDevices;
 import org.videolan.vlc.util.Permissions;
 import org.videolan.vlc.util.Util;
@@ -81,7 +81,7 @@ import java.util.List;
 
 @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
 public class MainTvActivity extends BaseTvActivity implements IVideoBrowser, OnItemViewSelectedListener,
-        OnItemViewClickedListener, OnClickListener, PlaybackService.Callback {
+        OnItemViewClickedListener, OnClickListener, PlaybackService.Callback, MediaUpdatedCb {
 
     private static final int NUM_ITEMS_PREVIEW = 5;
 
@@ -104,7 +104,6 @@ public class MainTvActivity extends BaseTvActivity implements IVideoBrowser, OnI
 
     protected BrowseFragment mBrowseFragment;
     private ProgressBar mProgressBar;
-    private static Thumbnailer sThumbnailer;
     ArrayObjectAdapter mRowsAdapter = new ArrayObjectAdapter(new ListRowPresenter());
     ArrayObjectAdapter mVideoAdapter, mCategoriesAdapter, mHistoryAdapter, mBrowserAdapter, mOtherAdapter;
     View mRootContainer;
@@ -118,13 +117,8 @@ public class MainTvActivity extends BaseTvActivity implements IVideoBrowser, OnI
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        boolean rescan = mSettings.getBoolean(PreferencesActivity.AUTO_RESCAN, true);
-        if (rescan || mMediaLibrary.getMediaItems().isEmpty()) {
-            if (rescan)
-                mMediaLibrary.scanMediaItems(false);
-            else
-                mMediaLibrary.loadMediaItems();
-        }
+        if (mSettings.getBoolean(PreferencesActivity.AUTO_RESCAN, true))
+            mMediaLibrary.nativeReload();
 
         if (!VLCInstance.testCompatibleCPU(this)) {
             finish();
@@ -202,27 +196,13 @@ public class MainTvActivity extends BaseTvActivity implements IVideoBrowser, OnI
 
     protected void onResume() {
         super.onResume();
-        mMediaLibrary.addUpdateHandler(mHandler);
-        if (sThumbnailer != null)
-            sThumbnailer.setVideoBrowser(this);
-
+        mMediaLibrary.setMediaUpdatedCb(this, Medialibrary.FLAG_MEDIA_UPDATED_VIDEO);
         mBrowseFragment.setBrandColor(getResources().getColor(R.color.orange800));
     }
 
     protected void onPause() {
         super.onPause();
-        mMediaLibrary.removeUpdateHandler(mHandler);
-
-        /* Stop the thumbnailer */
-        if (sThumbnailer != null)
-            sThumbnailer.setVideoBrowser(null);
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        if (sThumbnailer != null)
-            sThumbnailer.clearJobs();
+        mMediaLibrary.removeMediaUpdatedCb();
     }
 
     @Override
@@ -249,7 +229,7 @@ public class MainTvActivity extends BaseTvActivity implements IVideoBrowser, OnI
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == ACTIVITY_RESULT_PREFERENCES) {
             if (resultCode == PreferencesActivity.RESULT_RESCAN) {
-                MediaLibrary.getInstance().scanMediaItems(true);
+                Medialibrary.getInstance(VLCApplication.getAppContext()).nativeReload();
                 update();
             } else if (resultCode == PreferencesActivity.RESULT_RESTART) {
                 Intent intent = getIntent();
@@ -292,16 +272,14 @@ public class MainTvActivity extends BaseTvActivity implements IVideoBrowser, OnI
         } else {
             mUpdateTask.AskRefresh();
         }
-        checkThumbs();
     }
 
     public void updateList() {
         if (mVideoAdapter != null) {
             if (mVideoAdapter.size() == 0)
-                mVideoAdapter.addAll(0, Arrays.asList(Medialibrary.getInstance(this).nativeGetVideos()));
+                mVideoAdapter.addAll(0, Arrays.asList(mMediaLibrary.nativeGetVideos()));
             mVideoAdapter.notifyArrayItemRangeChanged(0, mVideoAdapter.size());
         }
-        checkThumbs();
     }
 
     @Override
@@ -338,10 +316,26 @@ public class MainTvActivity extends BaseTvActivity implements IVideoBrowser, OnI
         mHandler.sendMessage(mHandler.obtainMessage(MediaLibrary.UPDATE_ITEM, item));
     }
 
+    @Override
+    public void onMediaUpdated(final MediaWrapper[] mediaList) {
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                for (MediaWrapper media : mediaList)
+                    if (media != null)
+                        updateItem(media);
+            }
+        });
+    }
+
     public void updateItem(MediaWrapper item) {
         if (mVideoAdapter != null && mVideoIndex != null && item != null) {
             if (mVideoIndex.containsKey(item.getLocation())) {
                 mVideoAdapter.notifyArrayItemRangeChanged(mVideoIndex.get(item.getLocation()).intValue(), 1);
+            } else {
+                int position = mVideoAdapter.size();
+                mVideoAdapter.add(position, item);
+                mVideoIndex.put(item.getLocation(), Integer.valueOf(position));
             }
         }
         if (mHistoryAdapter != null && mHistoryIndex != null && item != null) {
@@ -392,7 +386,8 @@ public class MainTvActivity extends BaseTvActivity implements IVideoBrowser, OnI
     public class AsyncUpdate extends AsyncTask<Void, Void, Void> {
         private boolean askRefresh = false;
         boolean showHistory;
-        ArrayList<MediaWrapper> videoList, history;
+        ArrayList<MediaWrapper> history;
+        MediaWrapper[] videoList;
 
         public AsyncUpdate() {
         }
@@ -415,7 +410,7 @@ public class MainTvActivity extends BaseTvActivity implements IVideoBrowser, OnI
 
         @Override
         protected Void doInBackground(Void... params) {
-            videoList = mMediaLibrary.getVideoItems();
+            videoList = mMediaLibrary.nativeGetVideos();
             if (showHistory)
                 history = MediaDatabase.getInstance().getHistory();
             return null;
@@ -429,14 +424,14 @@ public class MainTvActivity extends BaseTvActivity implements IVideoBrowser, OnI
             // Empty item to launch grid activity
             mVideoAdapter.add(new CardPresenter.SimpleCard(0, "All videos", R.drawable.ic_video_collection_big));
             // Update video section
-            if (!videoList.isEmpty()) {
-                final int size = Math.min(NUM_ITEMS_PREVIEW, videoList.size());
+            if (!Util.isArrayEmpty(videoList)) {
+                final int size = Math.min(NUM_ITEMS_PREVIEW, videoList.length);
                 mRootContainer.post(new Runnable() {
                     @Override
                     public void run() {
                         MediaWrapper item;
                         for (int i = 0; i < size; ++i) {
-                            item = videoList.get(i);
+                            item = videoList[i];
                             mVideoAdapter.add(item);
                             mVideoIndex.put(item.getLocation(), Integer.valueOf(i));
                         }
@@ -530,33 +525,8 @@ public class MainTvActivity extends BaseTvActivity implements IVideoBrowser, OnI
         mBrowserAdapter.notifyArrayItemRangeChanged(0, mBrowserAdapter.size());
     }
 
-    private void checkThumbs() {
-        VLCApplication.runBackground(new Runnable() {
-            @Override
-            public void run() {
-                sThumbnailer = new Thumbnailer();
-                Bitmap picture;
-                ArrayList<MediaWrapper> videoList = mMediaLibrary.getVideoItems();
-                MediaDatabase mediaDatabase = MediaDatabase.getInstance();
-                if (sThumbnailer != null && !Util.isListEmpty(videoList)) {
-                    for (MediaWrapper MediaWrapper : videoList) {
-                        picture = mediaDatabase.getPicture(MediaWrapper.getUri());
-                        if (picture == null)
-                            sThumbnailer.addJob(MediaWrapper);
-                    }
-                    if (sThumbnailer.getJobsCount() > 0)
-                        sThumbnailer.start((IVideoBrowser) mContext);
-                }
-            }
-        });
-    }
-
-    public static Thumbnailer getThumbnailer() {
-        return sThumbnailer;
-    }
-
     protected void refresh() {
-        mMediaLibrary.scanMediaItems(true);
+        mMediaLibrary.nativeReload();
     }
 
     @Override

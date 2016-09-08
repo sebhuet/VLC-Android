@@ -23,6 +23,7 @@ import org.videolan.vlc.util.SubtitlesDownloader;
 import org.videolan.vlc.util.Util;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class MediaUtils {
@@ -111,6 +112,10 @@ public class MediaUtils {
                     mClient.disconnect();
                 }
             };
+    }
+
+    public static void openArray(final Context context, final MediaWrapper[] array, final int position){
+        openList(context, Arrays.asList(array), position);
     }
 
     public static void openList(final Context context, final List<MediaWrapper> list, final int position){

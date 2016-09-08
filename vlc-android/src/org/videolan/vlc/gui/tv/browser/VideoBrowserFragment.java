@@ -25,60 +25,32 @@ package org.videolan.vlc.gui.tv.browser;
 
 import android.annotation.TargetApi;
 import android.os.Build;
-import android.os.Bundle;
 import android.support.v17.leanback.widget.Presenter;
 import android.support.v17.leanback.widget.Row;
 import android.support.v17.leanback.widget.RowPresenter;
 
-import org.videolan.vlc.VLCApplication;
-import org.videolan.vlc.gui.helpers.MediaComparators;
-import org.videolan.vlc.gui.tv.MainTvActivity;
-import org.videolan.vlc.media.MediaLibrary;
-import org.videolan.vlc.media.MediaUtils;
+import org.videolan.medialibrary.Medialibrary;
 import org.videolan.medialibrary.media.MediaWrapper;
-import org.videolan.vlc.media.Thumbnailer;
-
-import java.util.ArrayList;
-import java.util.Collections;
+import org.videolan.vlc.VLCApplication;
+import org.videolan.vlc.media.MediaUtils;
 
 @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
 public class VideoBrowserFragment extends SortedBrowserFragment {
 
-    protected static Thumbnailer sThumbnailer;
-    private ArrayList<MediaWrapper> mVideos;
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        sThumbnailer = MainTvActivity.getThumbnailer();
-    }
-
-    public void onResume() {
-        super.onResume();
-        if (sThumbnailer != null)
-            sThumbnailer.setVideoBrowser(this);
-    }
-
-    public void onPause() {
-        super.onPause();
-        /* unregister from thumbnailer */
-        if (sThumbnailer != null)
-            sThumbnailer.setVideoBrowser(null);
-    }
+    private MediaWrapper[] mVideos;
 
     @Override
     protected void browse() {
         VLCApplication.runBackground(new Runnable() {
             @Override
             public void run() {
-                mVideos = MediaLibrary.getInstance().getVideoItems();
-                Collections.sort(mVideos, MediaComparators.byName);
+                mVideos = Medialibrary.getInstance(VLCApplication.getAppContext()).nativeGetVideos();
                 mHandler.post(new Runnable() {
                     @Override
                     public void run() {
                         MediaWrapper media;
-                        for (int i = 0; i < mVideos.size(); ++i) {
-                            media = mVideos.get(i);
+                        for (int i = 0; i < mVideos.length; ++i) {
+                            media = mVideos[i];
                             addMedia(media);
                             mMediaIndex.put(media.getLocation(), i);
                         }
@@ -93,6 +65,6 @@ public class VideoBrowserFragment extends SortedBrowserFragment {
     @Override
     public void onItemClicked(Presenter.ViewHolder viewHolder, Object item, RowPresenter.ViewHolder viewHolder1, Row row) {
         MediaWrapper media = (MediaWrapper) item;
-        MediaUtils.openList(getActivity(), mVideos, mMediaIndex.get(media.getLocation()));
+        MediaUtils.openArray(getActivity(), mVideos, mMediaIndex.get(media.getLocation()));
     }
 }

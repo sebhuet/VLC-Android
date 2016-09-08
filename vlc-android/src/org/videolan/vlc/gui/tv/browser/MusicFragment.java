@@ -36,16 +36,19 @@ import android.support.v17.leanback.widget.RowPresenter;
 import android.support.v4.util.SimpleArrayMap;
 import android.text.TextUtils;
 
+import org.videolan.medialibrary.Medialibrary;
+import org.videolan.medialibrary.media.MediaWrapper;
 import org.videolan.vlc.R;
+import org.videolan.vlc.VLCApplication;
 import org.videolan.vlc.gui.helpers.MediaComparators;
 import org.videolan.vlc.gui.tv.MainTvActivity;
 import org.videolan.vlc.gui.tv.TvUtil;
 import org.videolan.vlc.gui.tv.browser.interfaces.BrowserActivityInterface;
 import org.videolan.vlc.media.MediaLibrary;
-import org.videolan.medialibrary.media.MediaWrapper;
 import org.videolan.vlc.util.WeakHandler;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 
 @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
@@ -116,8 +119,8 @@ public class MusicFragment extends MediaLibBrowserFragment {
         protected void onPreExecute() {
             setTitle(getString(R.string.app_name_full));
             mAdapter.clear();
-            mMediaItemMap = new SimpleArrayMap<String, ListItem>();
-            mMediaItemList = new ArrayList<ListItem>();
+            mMediaItemMap = new SimpleArrayMap<>();
+            mMediaItemList = new ArrayList<>();
             ((BrowserActivityInterface)getActivity()).showProgress(true);
         }
 
@@ -126,7 +129,7 @@ public class MusicFragment extends MediaLibBrowserFragment {
             String title;
             ListItem item;
 
-            audioList = MediaLibrary.getInstance().getAudioItems();
+            audioList = new ArrayList<>(Arrays.asList(Medialibrary.getInstance(VLCApplication.getAppContext()).nativeGetAudio()));
             if (CATEGORY_ARTISTS == mCategory){
                 Collections.sort(audioList, MediaComparators.byArtist);
                 title = getString(R.string.artists);
