@@ -1651,7 +1651,7 @@ public class PlaybackService extends Service implements IVLCVout.Callback {
 
     @MainThread
     public void load(MediaWrapper media) {
-        ArrayList<MediaWrapper> arrayList = new ArrayList<MediaWrapper>();
+        ArrayList<MediaWrapper> arrayList = new ArrayList<>();
         arrayList.add(media);
         load(arrayList, 0);
     }
@@ -1728,13 +1728,12 @@ public class PlaybackService extends Service implements IVLCVout.Callback {
                 setRate(mSettings.getFloat(PreferencesActivity.KEY_AUDIO_PLAYBACK_RATE, 1.0F), true);
             mMediaPlayer.play();
 
-            mMedialibrary.increasePlayCount(mw .getId());
             determinePrevAndNextIndices();
             if (mSettings.getBoolean(PreferencesFragment.PLAYBACK_HISTORY, true))
                 VLCApplication.runBackground(new Runnable() {
                     @Override
                     public void run() {
-                        MediaDatabase.getInstance().addHistoryItem(mw);
+                        mMedialibrary.increasePlayCount(mw .getId());
                     }
                 });
         } else {//Start VideoPlayer for first video, it will trigger playIndex when ready.

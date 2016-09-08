@@ -119,8 +119,23 @@ reloadEntryPoint(JNIEnv* env, jobject thiz, jstring entryPoint)
 jboolean
 increasePlayCount(JNIEnv* env, jobject thiz, jlong id)
 {
+    return MediaLibrary_getInstance(env, thiz)->increasePlayCount((int64_t)id);
+}
+
+jobjectArray
+lastMediaPLayed(JNIEnv* env, jobject thiz)
+{
     AndroidMediaLibrary *aml = MediaLibrary_getInstance(env, thiz);
-    return aml->increasePlayCount((int64_t)id);
+    std::vector<medialibrary::MediaPtr> mediaPlayed = aml->lastMediaPlayed();
+    jobjectArray mediaRefs = (jobjectArray) env->NewGlobalRef(env->NewObjectArray(mediaPlayed.size(), ml_fields.MediaWrapper.clazz, NULL));
+    int index = -1;
+    jobject item = nullptr;
+    for(medialibrary::MediaPtr const& media : mediaPlayed) {
+        item = mediaToMediaWrapper(env, &ml_fields, media);
+        env->SetObjectArrayElement(mediaRefs, ++index, item);
+        env->DeleteLocalRef(item);
+    }
+    return mediaRefs;
 }
 
 jobjectArray
@@ -170,6 +185,7 @@ static JNINativeMethod methods[] = {
     {"nativeRelease", "()V", (void*)release },
     {"nativeDiscover", "(Ljava/lang/String;)V", (void*)discover },
     {"nativeBanFolder", "(Ljava/lang/String;)V", (void*)banFolder },
+    {"nativeLastMediaPlayed", "()[Lorg/videolan/medialibrary/media/MediaWrapper;", (void*)lastMediaPLayed },
     {"nativeGetVideos", "()[Lorg/videolan/medialibrary/media/MediaWrapper;", (void*)getVideos },
     {"nativeGetAudio", "()[Lorg/videolan/medialibrary/media/MediaWrapper;", (void*)getAudio },
     {"nativeGetVideoCount", "()I", (void*)getVideoCount },

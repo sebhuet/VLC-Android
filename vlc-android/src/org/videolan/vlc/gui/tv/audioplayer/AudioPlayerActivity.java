@@ -84,7 +84,7 @@ public class AudioPlayerActivity extends BaseTvActivity implements PlaybackServi
         mRecyclerView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL_LIST));
         mRecyclerView.setOnFocusChangeListener(this);
         if (mMediaList == null)
-            mMediaList = new ArrayList<MediaWrapper>();
+            mMediaList = new ArrayList<>();
 //        if (getIntent().getData() != null)
 //            mMediaList.add(getIntent().getDataString());
         mAdapter = new PlaylistAdapter(this, mMediaList);

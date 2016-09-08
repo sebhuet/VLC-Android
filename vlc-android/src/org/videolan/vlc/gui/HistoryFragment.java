@@ -31,6 +31,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import org.videolan.libvlc.util.AndroidUtil;
+import org.videolan.medialibrary.Medialibrary;
 import org.videolan.vlc.R;
 import org.videolan.vlc.VLCApplication;
 import org.videolan.vlc.gui.browser.MediaBrowserFragment;
@@ -110,7 +111,7 @@ public class HistoryFragment extends MediaBrowserFragment implements IRefreshabl
         VLCApplication.runBackground(new Runnable() {
             @Override
             public void run() {
-                ArrayList<MediaWrapper> list = MediaDatabase.getInstance().getHistory();
+                MediaWrapper[] list = Medialibrary.getInstance(VLCApplication.getAppContext()).nativeLastMediaPlayed();
                 mHandler.obtainMessage(UPDATE_LIST, list).sendToTarget();
             }
         });
@@ -141,7 +142,7 @@ public class HistoryFragment extends MediaBrowserFragment implements IRefreshabl
                 case UPDATE_LIST:
                     if (getActivity() == null)
                         return;
-                    mHistoryAdapter.setList((ArrayList<MediaWrapper>) msg.obj);
+                    mHistoryAdapter.setList((MediaWrapper[]) msg.obj);
                     updateEmptyView();
                     if (mHistoryAdapter != null)
                         mHistoryAdapter.notifyDataSetChanged();

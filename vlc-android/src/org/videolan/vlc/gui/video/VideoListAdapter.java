@@ -44,6 +44,7 @@ import org.videolan.vlc.gui.SecondaryActivity;
 import org.videolan.vlc.gui.helpers.UiTools;
 import org.videolan.vlc.media.MediaGroup;
 import org.videolan.medialibrary.media.MediaWrapper;
+import org.videolan.vlc.media.MediaUtils;
 import org.videolan.vlc.util.Strings;
 
 import java.util.ArrayList;
@@ -261,7 +262,7 @@ public class VideoListAdapter extends RecyclerView.Adapter<VideoListAdapter.View
                 activity.showSecondaryFragment(SecondaryActivity.VIDEO_GROUP_LIST, title);
             } else {
                 media.removeFlags(MediaWrapper.MEDIA_FORCE_AUDIO);
-                VideoPlayerActivity.start(v.getContext(), media.getUri(), media.getTitle());
+                MediaUtils.openMediaNoUi(VLCApplication.getAppContext(), media);
             }
         }
 

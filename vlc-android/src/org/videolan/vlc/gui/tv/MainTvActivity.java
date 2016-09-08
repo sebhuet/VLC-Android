@@ -169,7 +169,7 @@ public class MainTvActivity extends BaseTvActivity implements IVideoBrowser, OnI
             VLCApplication.runBackground(new Runnable() {
                 @Override
                 public void run() {
-                    final ArrayList<MediaWrapper> history = MediaDatabase.getInstance().getHistory();
+                    final MediaWrapper[] history = Medialibrary.getInstance(VLCApplication.getAppContext()).nativeLastMediaPlayed();
                     mHandler.post(new Runnable() {
                         @Override
                         public void run() {
@@ -379,8 +379,7 @@ public class MainTvActivity extends BaseTvActivity implements IVideoBrowser, OnI
     public class AsyncUpdate extends AsyncTask<Void, Void, Void> {
         private boolean askRefresh = false;
         boolean showHistory;
-        ArrayList<MediaWrapper> history;
-        MediaWrapper[] videoList;
+        MediaWrapper[] history, videoList;
 
         public AsyncUpdate() {
         }
@@ -405,7 +404,7 @@ public class MainTvActivity extends BaseTvActivity implements IVideoBrowser, OnI
         protected Void doInBackground(Void... params) {
             videoList = mMediaLibrary.nativeGetVideos();
             if (showHistory)
-                history = MediaDatabase.getInstance().getHistory();
+                history = Medialibrary.getInstance(VLCApplication.getAppContext()).nativeLastMediaPlayed();
             return null;
         }
 
@@ -445,7 +444,7 @@ public class MainTvActivity extends BaseTvActivity implements IVideoBrowser, OnI
             mRowsAdapter.add(new ListRow(musicHeader, mCategoriesAdapter));
 
             //History
-            if (showHistory && !history.isEmpty()){
+            if (showHistory && !Util.isArrayEmpty(history)){
                 mHistoryAdapter = new ArrayObjectAdapter(
                         new CardPresenter(mContext));
                 final HeaderItem historyHeader = new HeaderItem(HEADER_HISTORY, getString(R.string.history));
@@ -480,15 +479,15 @@ public class MainTvActivity extends BaseTvActivity implements IVideoBrowser, OnI
         }
     }
 
-    private void updateHistory(ArrayList<MediaWrapper> history) {
+    private void updateHistory(MediaWrapper[] history) {
         if (mHistoryAdapter == null || history == null)
             return;
         mHistoryAdapter.clear();
         if (!mSettings.getBoolean(PreferencesFragment.PLAYBACK_HISTORY, true))
             return;
         MediaWrapper item;
-        for (int i = 0; i < history.size(); ++i) {
-            item = history.get(i);
+        for (int i = 0; i < history.length; ++i) {
+            item = history[i];
             mHistoryAdapter.add(item);
             mHistoryIndex.put(item.getLocation(), Integer.valueOf(i));
         }

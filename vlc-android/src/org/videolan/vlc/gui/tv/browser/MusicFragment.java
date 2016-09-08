@@ -233,10 +233,10 @@ public class MusicFragment extends MediaLibBrowserFragment {
         public String mSubTitle;
         public ArrayList<MediaWrapper> mediaList;
 
-        public ListItem(String title, String subTitle, MediaWrapper MediaWrapper) {
-            mediaList = new ArrayList<MediaWrapper>();
-            if (MediaWrapper != null)
-                mediaList.add(MediaWrapper);
+        public ListItem(String title, String subTitle, MediaWrapper mediaWrapper) {
+            mediaList = new ArrayList<>();
+            if (mediaWrapper != null)
+                mediaList.add(mediaWrapper);
             mTitle = title;
             mSubTitle = subTitle;
         }

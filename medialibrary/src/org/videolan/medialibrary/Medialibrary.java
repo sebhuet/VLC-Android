@@ -142,6 +142,7 @@ public class Medialibrary {
     public native void nativeRelease();
     private native void nativeBanFolder(String path);
     public native void nativeDiscover(String path);
+    public native MediaWrapper[] nativeLastMediaPlayed();
     public native MediaWrapper[] nativeGetVideos();
     public native MediaWrapper[] nativeGetAudio();
     public native int nativeGetVideoCount();

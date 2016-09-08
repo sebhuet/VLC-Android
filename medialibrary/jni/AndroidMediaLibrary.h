@@ -32,6 +32,7 @@ public:
     void reload();
     void reload( const std::string& entryPoint );
     bool increasePlayCount(int64_t mediaId);
+    std::vector<medialibrary::MediaPtr> lastMediaPlayed();
     std::vector<medialibrary::MediaPtr> videoFiles( medialibrary::SortingCriteria sort = medialibrary::SortingCriteria::Default, bool desc = false );
     std::vector<medialibrary::MediaPtr> audioFiles( medialibrary::SortingCriteria sort = medialibrary::SortingCriteria::Default, bool desc = false );
 

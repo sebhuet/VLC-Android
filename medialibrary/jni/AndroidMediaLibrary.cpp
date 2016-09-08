@@ -99,6 +99,17 @@ AndroidMediaLibrary::increasePlayCount(int64_t mediaId)
 }
 
 std::vector<medialibrary::MediaPtr>
+AndroidMediaLibrary::lastMediaPlayed() {
+    try {
+    return p_ml->lastMediaPlayed();
+    } catch (const std::exception& e) {
+        LOGE("fail %s", e.what());
+        std::vector<medialibrary::MediaPtr> vector;
+        return vector;
+    }
+}
+
+std::vector<medialibrary::MediaPtr>
 AndroidMediaLibrary::videoFiles( medialibrary::SortingCriteria sort, bool desc )
 {
     try {

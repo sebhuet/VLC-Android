@@ -92,7 +92,7 @@ public class TvUtil {
     }
 
     public static void playAudioList(Activity activity, MediaWrapper[] array, int position) {
-        playAudioList(activity, (ArrayList<MediaWrapper>) Arrays.asList(array), position);
+        playAudioList(activity, new ArrayList<>(Arrays.asList(array)), position);
     }
 
     public static void playAudioList(Activity activity, ArrayList<MediaWrapper> list, int position) {
