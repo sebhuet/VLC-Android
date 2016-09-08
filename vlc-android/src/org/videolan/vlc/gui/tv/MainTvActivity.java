@@ -65,10 +65,8 @@ import org.videolan.vlc.gui.tv.audioplayer.AudioPlayerActivity;
 import org.videolan.vlc.gui.tv.browser.BaseTvActivity;
 import org.videolan.vlc.gui.tv.browser.MusicFragment;
 import org.videolan.vlc.gui.tv.browser.VerticalGridActivity;
-import org.videolan.vlc.gui.video.VideoListHandler;
 import org.videolan.vlc.interfaces.IVideoBrowser;
 import org.videolan.vlc.media.MediaDatabase;
-import org.videolan.vlc.media.MediaLibrary;
 import org.videolan.vlc.media.MediaUtils;
 import org.videolan.vlc.util.AndroidDevices;
 import org.videolan.vlc.util.Permissions;
@@ -102,6 +100,7 @@ public class MainTvActivity extends BaseTvActivity implements IVideoBrowser, OnI
 
     public static final String TAG = "VLC/MainTvActivity";
 
+    private Handler mHandler = new Handler();
     protected BrowseFragment mBrowseFragment;
     private ProgressBar mProgressBar;
     ArrayObjectAdapter mRowsAdapter = new ArrayObjectAdapter(new ListRowPresenter());
@@ -312,11 +311,6 @@ public class MainTvActivity extends BaseTvActivity implements IVideoBrowser, OnI
     }
 
     @Override
-    public void setItemToUpdate(MediaWrapper item) {
-        mHandler.sendMessage(mHandler.obtainMessage(MediaLibrary.UPDATE_ITEM, item));
-    }
-
-    @Override
     public void onMediaUpdated(final MediaWrapper[] mediaList) {
         mHandler.post(new Runnable() {
             @Override
@@ -345,7 +339,6 @@ public class MainTvActivity extends BaseTvActivity implements IVideoBrowser, OnI
         }
     }
 
-    private Handler mHandler = new VideoListHandler(this);
 
     @Override
     public void onItemSelected(Presenter.ViewHolder itemViewHolder, Object item, RowPresenter.ViewHolder rowViewHolder, Row row) {

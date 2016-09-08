@@ -221,11 +221,6 @@ public abstract class SortedBrowserFragment extends BrowseFragment implements Br
         return mMediaItemMap.isEmpty();
     }
 
-    @Override
-    public void setItemToUpdate(MediaWrapper item) {
-        mHandler.obtainMessage(UPDATE_ITEM, item).sendToTarget();
-    }
-
     public void updateItem(MediaWrapper item) {
         if (mAdapter != null && mMediaIndex != null && item != null
                 && mMediaIndex.containsKey(item.getLocation()))

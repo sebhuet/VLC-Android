@@ -59,9 +59,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 public class MediaLibrary {
     public final static String TAG = "VLC/MediaLibrary";
 
-    public static final int UPDATE_ITEM = 0;
-    public static final int MEDIA_ITEMS_UPDATED = 100;
-
     private static MediaLibrary mInstance;
     private final ArrayList<MediaWrapper> mItemList;
     private final ArrayList<Handler> mUpdateHandler;
@@ -443,7 +440,7 @@ public class MediaLibrary {
         // update the video and audio activities
         for (int i = 0; i < mUpdateHandler.size(); i++) {
             Handler h = mUpdateHandler.get(i);
-            h.obtainMessage(UPDATE_ITEM, mw).sendToTarget();
+            h.obtainMessage(0, mw).sendToTarget();
         }
     }
 
@@ -451,7 +448,7 @@ public class MediaLibrary {
         // update the video and audio activities
         for (int i = 0; i < mUpdateHandler.size(); i++) {
             Handler h = mUpdateHandler.get(i);
-            h.sendEmptyMessage(MEDIA_ITEMS_UPDATED);
+            h.sendEmptyMessage(0);
         }
     }
 

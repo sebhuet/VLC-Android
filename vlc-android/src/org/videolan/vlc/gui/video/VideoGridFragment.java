@@ -64,7 +64,6 @@ import org.videolan.vlc.interfaces.ISortable;
 import org.videolan.vlc.interfaces.IVideoBrowser;
 import org.videolan.vlc.media.MediaDatabase;
 import org.videolan.vlc.media.MediaGroup;
-import org.videolan.vlc.media.MediaLibrary;
 import org.videolan.vlc.media.MediaUtils;
 import org.videolan.vlc.util.FileUtils;
 import org.videolan.vlc.util.VLCInstance;
@@ -84,6 +83,7 @@ public class VideoGridFragment extends MediaBrowserFragment implements MediaUpda
     protected View mViewNomedia;
     protected String mGroup;
 
+    private Handler mHandler = new Handler();
     private VideoListAdapter mVideoAdapter;
     private VideoGridAnimator mAnimator;
 
@@ -159,9 +159,6 @@ public class VideoGridFragment extends MediaBrowserFragment implements MediaUpda
     public void onPause() {
         super.onPause();
         mMediaLibrary.removeMediaUpdatedCb();
-        //TODO
-        //mMediaLibrary.setBrowser(null);
-        //mMediaLibrary.removeUpdateHandler(mHandler);
     }
 
     @Override
@@ -170,8 +167,6 @@ public class VideoGridFragment extends MediaBrowserFragment implements MediaUpda
         mMediaLibrary.setMediaUpdatedCb(this, Medialibrary.FLAG_MEDIA_UPDATED_VIDEO);
         if (getActivity() instanceof MainActivity)
             mMainActivity = (MainActivity) getActivity();
-        //mMediaLibrary.setBrowser(this);
-        //mMediaLibrary.addUpdateHandler(mHandler);
         mMediaLibrary.nativeResumeBackgroundOperations();
         final boolean refresh = mVideoAdapter.isEmpty() && !mMediaLibrary.isWorking();
         // We don't animate while medialib is scanning. Because gridview is being populated.
@@ -369,11 +364,6 @@ public class VideoGridFragment extends MediaBrowserFragment implements MediaUpda
         return info != null && handleContextItemSelected(menu, info.position);
     }
 
-    /**
-     * Handle changes on the list
-     */
-    private Handler mHandler = new VideoListHandler(this);
-
     @Override
     public void onMediaUpdated(final MediaWrapper[] mediaList) {
         mHandler.post(new Runnable() {
@@ -467,25 +457,6 @@ public class VideoGridFragment extends MediaBrowserFragment implements MediaUpda
     @Override
     public int sortDirection(int sortby) {
         return mVideoAdapter.sortDirection(sortby);
-    }
-
-    public void setItemToUpdate(MediaWrapper item) {
-        if (mVideoAdapter.contains(item))
-            mHandler.sendMessage(mHandler.obtainMessage(MediaLibrary.UPDATE_ITEM, item));
-        else // Update group item when its first element is updated
-            for (int i = 0; i < mVideoAdapter.getItemCount(); ++i) {
-                if (mVideoAdapter.getItem(i) instanceof MediaGroup &&
-                        ((MediaGroup)mVideoAdapter.getItem(i)).getFirstMedia().equals(item)) {
-                    final int position = i;
-                    mHandler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            mVideoAdapter.notifyItemChanged(position);
-                        }
-                    });
-                    return;
-                }
-            }
     }
 
     public void setGroup(String prefix) {

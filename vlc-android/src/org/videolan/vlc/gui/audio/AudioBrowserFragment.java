@@ -760,9 +760,6 @@ public class AudioBrowserFragment extends MediaBrowserFragment implements SwipeR
             if(fragment == null) return;
 
             switch (msg.what) {
-                case MediaLibrary.MEDIA_ITEMS_UPDATED:
-                    fragment.updateLists();
-                    break;
                 case MSG_LOADING:
                     if (fragment.mArtistsAdapter.isEmpty() && fragment.mAlbumsAdapter.isEmpty() &&
                             fragment.mSongsAdapter.isEmpty() && fragment.mGenresAdapter.isEmpty())
