@@ -39,7 +39,7 @@ public class Medialibrary {
     public Medialibrary(Context context) {
         nativeInit(context.getExternalFilesDir(null).getAbsolutePath(), Environment.getExternalStorageDirectory().getAbsolutePath());
         mContext = context.getApplicationContext();
-        nativeBanFolder(Environment.getExternalStorageDirectory().getAbsolutePath()+"/Android/data/");
+//        nativeBanFolder(Environment.getExternalStorageDirectory().getAbsolutePath()+"/Android/data/");
         nativeDiscover(Environment.getExternalStorageDirectory().getAbsolutePath());
     }
 
