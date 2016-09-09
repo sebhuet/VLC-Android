@@ -46,9 +46,11 @@ mediaToMediaWrapper(JNIEnv* env, fields *fields, medialibrary::MediaPtr const& m
     bool hasVideoTracks = !mediaPtr->videoTracks().empty();
     unsigned int width = hasVideoTracks ? mediaPtr->videoTracks().at(0)->width() : 0;
     unsigned int height = hasVideoTracks ? mediaPtr->videoTracks().at(0)->height() : 0;
+    int64_t duration = mediaPtr->duration();
+    int64_t progress = duration* mediaPtr->progress();
 
     jobject item = env->NewObject(fields->MediaWrapper.clazz, fields->MediaWrapper.initID,
-                          (jlong) mediaPtr->id(), mrl,(jlong) mediaPtr->duration(), (jlong) -1, type,
+                          (jlong) mediaPtr->id(), mrl,(jlong) progress, (jlong) duration, type,
                           title, artist, genre, album,
                           albumArtist, width, height, thumbnail,
                           (jint) -2, (jint) -2, (jint) 0, (jint) 0, (jlong) mediaPtr->files().at(0)->lastModificationDate());
