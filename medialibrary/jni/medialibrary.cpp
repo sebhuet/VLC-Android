@@ -122,6 +122,12 @@ increasePlayCount(JNIEnv* env, jobject thiz, jlong id)
     return MediaLibrary_getInstance(env, thiz)->increasePlayCount((int64_t)id);
 }
 
+jboolean
+updateProgress(JNIEnv* env, jobject thiz, jlong id, jlong time)
+{
+    return MediaLibrary_getInstance(env, thiz)->updateProgress((int64_t)id, (int64_t) time);
+}
+
 jobjectArray
 lastMediaPLayed(JNIEnv* env, jobject thiz)
 {
@@ -196,6 +202,7 @@ static JNINativeMethod methods[] = {
     {"nativeReload", "()V", (void*)reload },
     {"nativeReload", "(Ljava/lang/String;)V", (void*)reloadEntryPoint },
     {"nativeIncreasePlayCount", "(J)Z", (void*)increasePlayCount },
+    {"nativeUpdateProgress", "(JJ)Z", (void*)updateProgress },
     {"nativeSetMediaUpdatedCbFlag", "(I)V", (void*)setMediaUpdatedCbFlag },
     {"nativeSetMediaAddedCbFlag", "(I)V", (void*)setMediaAddedCbFlag },
 };

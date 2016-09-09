@@ -67,6 +67,12 @@ public class Medialibrary {
         return mediaId > 0 && nativeIncreasePlayCount(mediaId);
     }
 
+    public boolean updateProgress(MediaWrapper mw, long time) {
+        if (mw == null || mw.getId() == 0)
+            return false;
+        return nativeUpdateProgress(mw.getId(), time);
+    }
+
     public void onMediaAdded(MediaWrapper[] mediaList) {
         if (mediaAddedCb == null)
             return;
@@ -153,6 +159,7 @@ public class Medialibrary {
     public native void nativeReload();
     public native void nativeReload(String entryPoint);
     private native boolean nativeIncreasePlayCount(long mediaId);
+    private native boolean nativeUpdateProgress(long mediaId, long time);
     private native void nativeSetMediaUpdatedCbFlag(int flags);
     private native void nativeSetMediaAddedCbFlag(int flags);
 }

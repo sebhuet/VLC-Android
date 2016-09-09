@@ -32,7 +32,6 @@ import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.LocalBroadcastManager;
-import android.support.v4.util.ArrayMap;
 import android.support.v7.widget.RecyclerView;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -69,7 +68,9 @@ import org.videolan.vlc.util.FileUtils;
 import org.videolan.vlc.util.VLCInstance;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class VideoGridFragment extends MediaBrowserFragment implements MediaUpdatedCb, ISortable, IVideoBrowser, SwipeRefreshLayout.OnRefreshListener {
 
@@ -168,21 +169,40 @@ public class VideoGridFragment extends MediaBrowserFragment implements MediaUpda
         if (getActivity() instanceof MainActivity)
             mMainActivity = (MainActivity) getActivity();
         mMediaLibrary.nativeResumeBackgroundOperations();
-        final boolean refresh = mVideoAdapter.isEmpty() && !mMediaLibrary.isWorking();
+        final boolean isWorking = mMediaLibrary.isWorking();
+        final boolean refresh = mVideoAdapter.isEmpty() && !isWorking;
         // We don't animate while medialib is scanning. Because gridview is being populated.
         // That would lead to graphical glitches
         final boolean animate = mGroup == null && refresh;
         if (refresh)
             updateList();
         else {
-            mViewNomedia.setVisibility(mVideoAdapter.getItemCount() > 0 ? View.GONE : View.VISIBLE);
+            mViewNomedia.setVisibility(mVideoAdapter.isEmpty() ? View.VISIBLE : View.GONE);
+            if (!isWorking)
+                updateTimes();
         }
-        //Get & set times
-        ArrayMap<String, Long> times = MediaDatabase.getInstance().getVideoTimes();
-        mVideoAdapter.setTimes(times);
+
         updateViewMode();
         if (animate)
             mAnimator.animate();
+    }
+
+    private void updateTimes() {
+        VLCApplication.runBackground(new Runnable() {
+            @Override
+            public void run() {
+                MediaWrapper[] videos = mMediaLibrary.nativeGetVideos();
+                final Map<Long, Long> times = new HashMap<>(videos.length);
+                for (MediaWrapper mw : videos)
+                    times.put(mw.getId(), mw.getTime());
+                mHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        mVideoAdapter.setTimes(times);
+                    }
+                });
+            }
+        });
     }
 
     @Override
@@ -386,7 +406,7 @@ public class VideoGridFragment extends MediaBrowserFragment implements MediaUpda
     public void updateList() {
         if (!mSwipeRefreshLayout.isRefreshing())
             mSwipeRefreshLayout.setRefreshing(true);
-                final MediaWrapper[] itemList = mMediaLibrary.nativeGetVideos();
+        final MediaWrapper[] itemList = mMediaLibrary.nativeGetVideos();
 
         if (itemList.length > 0) {
             VLCApplication.runBackground(new Runnable() {

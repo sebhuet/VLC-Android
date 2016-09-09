@@ -614,6 +614,7 @@ public class PlaybackService extends Service implements IVLCVout.Callback {
                     break;
                 case MediaPlayer.Event.Stopped:
                     Log.i(TAG, "MediaPlayer.Event.Stopped");
+                    mMedialibrary.updateProgress(getCurrentMediaWrapper(), getTime());
                     executeUpdate();
                     publishState(event.type);
                     executeUpdateProgress();
@@ -622,7 +623,7 @@ public class PlaybackService extends Service implements IVLCVout.Callback {
                     changeAudioFocus(false);
                     break;
                 case MediaPlayer.Event.EndReached:
-                    Log.i(TAG, "MediaPlayer.Event.EndReached");
+                    mMedialibrary.updateProgress(getCurrentMediaWrapper(), getTime());
                     executeUpdateProgress();
                     determinePrevAndNextIndices(true);
                     next();
@@ -953,6 +954,7 @@ public class PlaybackService extends Service implements IVLCVout.Callback {
         savePosition();
         final Media media = mMediaPlayer.getMedia();
         if (media != null) {
+            mMedialibrary.updateProgress(getCurrentMedia(), getTime());
             media.setEventListener(null);
             mMediaPlayer.setEventListener(null);
             mMediaPlayer.stop();
@@ -1194,7 +1196,6 @@ public class PlaybackService extends Service implements IVLCVout.Callback {
             Log.w(TAG, "Warning: invalid next index, aborted !");
             //Close video player if started
             LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(VideoPlayerActivity.EXIT_PLAYER));
-            stop();
             return;
         }
         mVideoBackground = !isVideoPlaying() && canSwitchToVideo();
