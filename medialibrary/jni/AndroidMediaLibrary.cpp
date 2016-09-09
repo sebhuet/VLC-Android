@@ -146,6 +146,114 @@ AndroidMediaLibrary::audioFiles( medialibrary::SortingCriteria sort, bool desc )
     }
 }
 
+std::vector<medialibrary::AlbumPtr>
+AndroidMediaLibrary::albums()
+{
+    try {
+        return p_ml->albums();
+    } catch (const std::exception& e) {
+        LOGE("fail %s", e.what());
+        std::vector<medialibrary::AlbumPtr> vector;
+        return vector;
+    }
+}
+
+std::vector<medialibrary::ArtistPtr>
+AndroidMediaLibrary::artists()
+{
+    try {
+        return p_ml->artists();
+    } catch (const std::exception& e) {
+        LOGE("fail %s", e.what());
+        std::vector<medialibrary::ArtistPtr> vector;
+        return vector;
+    }
+}
+
+std::vector<medialibrary::GenrePtr>
+AndroidMediaLibrary::genres()
+{
+    try {
+        return p_ml->genres();
+    } catch (const std::exception& e) {
+        LOGE("fail %s", e.what());
+        std::vector<medialibrary::GenrePtr> vector;
+        return vector;
+    }
+}
+
+std::vector<medialibrary::MediaPtr>
+AndroidMediaLibrary::tracksFromAlbum( int64_t albumId )
+{
+    try {
+        return p_ml->album(albumId)->tracks();
+    } catch (const std::exception& e) {
+        LOGE("fail %s", e.what());
+        std::vector<medialibrary::MediaPtr> vector;
+        return vector;
+    }
+}
+
+std::vector<medialibrary::MediaPtr>
+AndroidMediaLibrary::mediaFromArtist( int64_t artistId )
+{
+    try {
+        return p_ml->artist(artistId)->media();
+    } catch (const std::exception& e) {
+        LOGE("fail %s", e.what());
+        std::vector<medialibrary::MediaPtr> vector;
+        return vector;
+    }
+}
+
+std::vector<medialibrary::AlbumPtr>
+AndroidMediaLibrary::albumsFromArtist( int64_t artistId )
+{
+    try {
+        return p_ml->artist(artistId)->albums();
+    } catch (const std::exception& e) {
+        LOGE("fail %s", e.what());
+        std::vector<medialibrary::AlbumPtr> vector;
+        return vector;
+    }
+}
+
+std::vector<medialibrary::MediaPtr>
+AndroidMediaLibrary::mediaFromGenre( int64_t genreId )
+{
+    try {
+        return p_ml->genre(genreId)->tracks();
+    } catch (const std::exception& e) {
+        LOGE("fail %s", e.what());
+        std::vector<medialibrary::MediaPtr> vector;
+        return vector;
+    }
+}
+
+std::vector<medialibrary::AlbumPtr>
+AndroidMediaLibrary::albumsFromGenre( int64_t genreId )
+{
+    try {
+        return p_ml->genre(genreId)->albums();
+    } catch (const std::exception& e) {
+        LOGE("fail %s", e.what());
+        std::vector<medialibrary::AlbumPtr> vector;
+        return vector;
+    }
+}
+
+std::vector<medialibrary::ArtistPtr>
+AndroidMediaLibrary::artistsFromGenre( int64_t genreId )
+{
+    try {
+        return p_ml->genre(genreId)->artists();
+    } catch (const std::exception& e) {
+        LOGE("fail %s", e.what());
+        std::vector<medialibrary::ArtistPtr> vector;
+        return vector;
+    }
+}
+
 void
 AndroidMediaLibrary::onMediaAdded( std::vector<medialibrary::MediaPtr> mediaList )
 {
@@ -157,8 +265,8 @@ AndroidMediaLibrary::onMediaAdded( std::vector<medialibrary::MediaPtr> mediaList
         int index = -1;
         for (medialibrary::MediaPtr const& media : mediaList) {
             medialibrary::IMedia::Type type = media->type();
-            if (!(type == medialibrary::IMedia::Type::AudioType && m_mediaAddedType & FLAG_MEDIA_ADDED_AUDIO ||
-                    type == medialibrary::IMedia::Type::VideoType && m_mediaAddedType & FLAG_MEDIA_ADDED_VIDEO))
+            if (!((type == medialibrary::IMedia::Type::AudioType && m_mediaAddedType & FLAG_MEDIA_ADDED_AUDIO) ||
+                    (type == medialibrary::IMedia::Type::VideoType && m_mediaAddedType & FLAG_MEDIA_ADDED_VIDEO)))
                 continue;
             jobject item = mediaToMediaWrapper(env, p_fields, media);
             env->SetObjectArrayElement(mediaRefs, ++index, item);
@@ -179,8 +287,8 @@ void AndroidMediaLibrary::onMediaUpdated( std::vector<medialibrary::MediaPtr> me
         int index = -1;
         for (medialibrary::MediaPtr const& media : mediaList) {
             medialibrary::IMedia::Type type = media->type();
-            if (!(type == medialibrary::IMedia::Type::AudioType && m_mediaUpdatedType & FLAG_MEDIA_UPDATED_AUDIO ||
-                    type == medialibrary::IMedia::Type::VideoType && m_mediaUpdatedType & FLAG_MEDIA_UPDATED_VIDEO))
+            if (!((type == medialibrary::IMedia::Type::AudioType && m_mediaUpdatedType & FLAG_MEDIA_UPDATED_AUDIO) ||
+                    (type == medialibrary::IMedia::Type::VideoType && m_mediaUpdatedType & FLAG_MEDIA_UPDATED_VIDEO)))
                 continue;
             jobject item = mediaToMediaWrapper(env, p_fields, media);
             env->SetObjectArrayElement(mediaRefs, ++index, item);

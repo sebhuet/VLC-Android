@@ -52,13 +52,27 @@ struct fields {
         jmethodID onDiscoveryCompletedId;
         jmethodID onParsingStatsUpdatedId;
     } MediaLibrary;
+    struct Album {
+        jclass clazz;
+        jmethodID initID;
+    } Album;
+    struct Artist {
+        jclass clazz;
+        jmethodID initID;
+    } Artist;
+    struct Genre {
+        jclass clazz;
+        jmethodID initID;
+    } Genre;
     struct MediaWrapper {
         jclass clazz;
         jmethodID initID;
     } MediaWrapper;
 };
 
-jobject
-mediaToMediaWrapper(JNIEnv*, fields*, const medialibrary::MediaPtr &);
+jobject mediaToMediaWrapper(JNIEnv*, fields*, const medialibrary::MediaPtr &);
+jobject convertAlbumObject(JNIEnv* env, fields *fields, medialibrary::AlbumPtr const& albumPtr);
+jobject convertArtistObject(JNIEnv* env, fields *fields, medialibrary::ArtistPtr const& artistPtr);
+jobject convertGenreOgbject(JNIEnv* env, fields *fields, medialibrary::GenrePtr const& genrePtr);
 
 #endif //VLC_MEDIALIB_UTILS_H

@@ -7,6 +7,9 @@ import android.util.Log;
 import org.videolan.medialibrary.interfaces.DevicesDiscoveryCb;
 import org.videolan.medialibrary.interfaces.MediaAddedCb;
 import org.videolan.medialibrary.interfaces.MediaUpdatedCb;
+import org.videolan.medialibrary.media.Album;
+import org.videolan.medialibrary.media.Artist;
+import org.videolan.medialibrary.media.Genre;
 import org.videolan.medialibrary.media.MediaWrapper;
 
 import java.io.File;
@@ -151,6 +154,9 @@ public class Medialibrary {
     public native MediaWrapper[] nativeLastMediaPlayed();
     public native MediaWrapper[] nativeGetVideos();
     public native MediaWrapper[] nativeGetAudio();
+    public native Album[] nativeGetAlbums();
+    public native Artist[] nativeGetArtists();
+    public native Genre[] nativeGetGenres();
     public native int nativeGetVideoCount();
     public native int nativeGetAudioCount();
     public native  boolean nativeIsWorking();

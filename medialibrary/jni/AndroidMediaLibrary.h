@@ -10,10 +10,14 @@
 #include "AndroidDeviceLister.h"
 #include "utils.h"
 
+
+#include <medialibrary/IAlbum.h>
+#include <medialibrary/IArtist.h>
+#include <medialibrary/IGenre.h>
+#include <medialibrary/Types.h>
 #include <medialibrary/IDeviceLister.h>
 #include <medialibrary/IMedia.h>
 #include <medialibrary/IMediaLibrary.h>
-#include <medialibrary/Types.h>
 
 class AndroidMediaLibrary : public medialibrary::IMediaLibraryCb
 {
@@ -36,6 +40,15 @@ public:
     std::vector<medialibrary::MediaPtr> lastMediaPlayed();
     std::vector<medialibrary::MediaPtr> videoFiles( medialibrary::SortingCriteria sort = medialibrary::SortingCriteria::Default, bool desc = false );
     std::vector<medialibrary::MediaPtr> audioFiles( medialibrary::SortingCriteria sort = medialibrary::SortingCriteria::Default, bool desc = false );
+    std::vector<medialibrary::AlbumPtr> albums();
+    std::vector<medialibrary::ArtistPtr> artists();
+    std::vector<medialibrary::GenrePtr> genres();
+    std::vector<medialibrary::MediaPtr> tracksFromAlbum( int64_t albumId );
+    std::vector<medialibrary::MediaPtr> mediaFromArtist( int64_t artistId );
+    std::vector<medialibrary::AlbumPtr> albumsFromArtist( int64_t artistId );
+    std::vector<medialibrary::MediaPtr> mediaFromGenre( int64_t genreId );
+    std::vector<medialibrary::AlbumPtr> albumsFromGenre( int64_t genreId );
+    std::vector<medialibrary::ArtistPtr> artistsFromGenre( int64_t genreId );
 
 
     void onMediaAdded( std::vector<medialibrary::MediaPtr> media );

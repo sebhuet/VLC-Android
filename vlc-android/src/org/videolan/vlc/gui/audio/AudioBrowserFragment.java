@@ -31,7 +31,6 @@ import android.support.design.widget.TabLayout;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.KeyEvent;
@@ -55,6 +54,7 @@ import org.videolan.libvlc.Media;
 import org.videolan.libvlc.util.AndroidUtil;
 import org.videolan.libvlc.util.MediaBrowser;
 import org.videolan.medialibrary.Medialibrary;
+import org.videolan.medialibrary.media.MediaWrapper;
 import org.videolan.vlc.R;
 import org.videolan.vlc.VLCApplication;
 import org.videolan.vlc.gui.MainActivity;
@@ -67,9 +67,7 @@ import org.videolan.vlc.gui.helpers.UiTools;
 import org.videolan.vlc.gui.view.SwipeRefreshLayout;
 import org.videolan.vlc.interfaces.IBrowser;
 import org.videolan.vlc.media.MediaDatabase;
-import org.videolan.vlc.media.MediaLibrary;
 import org.videolan.vlc.media.MediaUtils;
-import org.videolan.medialibrary.media.MediaWrapper;
 import org.videolan.vlc.util.AndroidDevices;
 import org.videolan.vlc.util.FileUtils;
 import org.videolan.vlc.util.Util;
@@ -789,9 +787,6 @@ public class AudioBrowserFragment extends MediaBrowserFragment implements SwipeR
 //         ArrayList<MediaWrapper> audioItems = MediaLibrary.getInstance().getAudioItems();
         final Medialibrary ml = Medialibrary.getInstance(VLCApplication.getAppContext());
         MediaWrapper[] audioItems = ml.nativeGetAudio();
-        for (MediaWrapper mw : audioItems) {
-            Log.d(TAG, "run: song " + mw.getTitle());
-        }
         mAudioList = new ArrayList<>(Arrays.asList(audioItems));
 //        mAudioList = audioItems;
         if (mAudioList.isEmpty()){

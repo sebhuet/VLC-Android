@@ -70,3 +70,42 @@ mediaToMediaWrapper(JNIEnv* env, fields *fields, medialibrary::MediaPtr const& m
         env->DeleteLocalRef(thumbnail);
     return item;
 }
+
+jobject
+convertAlbumObject(JNIEnv* env, fields *fields, medialibrary::AlbumPtr const& albumPtr)
+{
+    jstring title = env->NewStringUTF(albumPtr->title().c_str());
+    jstring artworkMrl = env->NewStringUTF(albumPtr->artworkMrl().c_str());
+    jlong albumArtistId = albumPtr->albumArtist() != nullptr ? albumPtr->albumArtist()->id() : 0;
+    jobject item = env->NewObject(fields->Album.clazz, fields->Album.initID,
+                          (jlong) albumPtr->id(), title, albumPtr->releaseYear(), artworkMrl, albumArtistId, (jint) albumPtr->nbTracks(), (jint) albumPtr->duration());
+    env->DeleteLocalRef(title);
+    env->DeleteLocalRef(artworkMrl);
+    return item;
+}
+
+jobject
+convertArtistObject(JNIEnv* env, fields *fields, medialibrary::ArtistPtr const& artistPtr)
+{
+    jstring name = env->NewStringUTF(artistPtr->name().c_str());
+    jstring artworkMrl = env->NewStringUTF(artistPtr->artworkMrl().c_str());
+    jstring shortBio = env->NewStringUTF(artistPtr->shortBio().c_str());
+    jstring musicBrainzId = env->NewStringUTF(artistPtr->musicBrainzId().c_str());
+    jobject item = env->NewObject(fields->Artist.clazz, fields->Artist.initID,
+                          (jlong) artistPtr->id(), name, shortBio, artworkMrl, musicBrainzId);
+    env->DeleteLocalRef(name);
+    env->DeleteLocalRef(artworkMrl);
+    env->DeleteLocalRef(shortBio);
+    env->DeleteLocalRef(musicBrainzId);
+    return item;
+}
+
+jobject
+convertGenreOgbject(JNIEnv* env, fields *fields, medialibrary::GenrePtr const& genrePtr)
+{
+    jstring name = env->NewStringUTF(genrePtr->name().c_str());
+    jobject item = env->NewObject(fields->Genre.clazz, fields->Genre.initID,
+                          (jlong) genrePtr->id(), name);
+    env->DeleteLocalRef(name);
+    return item;
+}
