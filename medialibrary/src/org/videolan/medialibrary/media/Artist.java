@@ -1,15 +1,19 @@
 package org.videolan.medialibrary.media;
 
-public class Artist {
+import android.os.Parcel;
+import android.os.Parcelable;
 
-    private long id;
+import org.videolan.medialibrary.Medialibrary;
+
+public class Artist extends MediaLibraryItem {
+
     private String name;
     private String shortBio;
     private String artworkMrl;
     private String musicBrainzId;
 
-    public Artist(long id, String name, String shortBio, String artworkMrl, String musicBrainzId) {
-        this.id = id;
+    public Artist(long mId, String name, String shortBio, String artworkMrl, String musicBrainzId) {
+        this.mId = mId;
         this.name = name;
         this.shortBio = shortBio;
         this.artworkMrl = artworkMrl;
@@ -17,10 +21,10 @@ public class Artist {
     }
 
     public long getId() {
-        return id;
+        return mId;
     }
 
-    public String getName() {
+    public String getTitle() {
         return name;
     }
 
@@ -48,14 +52,42 @@ public class Artist {
         this.artworkMrl = artworkMrl;
     }
 
-    public Album[] getAlbums() {
-        return nativeGetAlbumsFromArtist(id);
+    public Album[] getAlbums(Medialibrary ml) {
+        return nativeGetAlbumsFromArtist(ml, mId);
     }
 
-    public MediaWrapper[] getMedia() {
-        return nativeGetMediaFromArtist(id);
+    public MediaWrapper[] getMedia(Medialibrary ml) {
+        return nativeGetMediaFromArtist(ml, mId);
     }
 
-    private native Album[] nativeGetAlbumsFromArtist(long id);
-    private native MediaWrapper[] nativeGetMediaFromArtist(long id);
+    private native Album[] nativeGetAlbumsFromArtist(Medialibrary ml, long mId);
+    private native MediaWrapper[] nativeGetMediaFromArtist(Medialibrary ml, long mId);
+
+    @Override
+    public void writeToParcel(Parcel parcel, int i) {
+        parcel.writeLong(mId);
+        parcel.writeString(name);
+        parcel.writeString(shortBio);
+        parcel.writeString(artworkMrl);
+        parcel.writeString(musicBrainzId);
+    }
+
+    public static Parcelable.Creator<Artist> CREATOR
+            = new Parcelable.Creator<Artist>() {
+        public Artist createFromParcel(Parcel in) {
+            return new Artist(in);
+        }
+
+        public Artist[] newArray(int size) {
+            return new Artist[size];
+        }
+    };
+
+    private Artist(Parcel in) {
+        this.mId = in.readLong();
+        this.name = in.readString();
+        this.shortBio = in.readString();
+        this.artworkMrl = in.readString();
+        this.musicBrainzId = in.readString();
+    }
 }

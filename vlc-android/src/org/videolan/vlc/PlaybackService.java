@@ -87,6 +87,7 @@ import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
@@ -1615,6 +1616,11 @@ public class PlaybackService extends Service implements IVLCVout.Callback {
     }
 
     @MainThread
+    public void load(MediaWrapper[] mediaList, int position) {
+        load(Arrays.asList(mediaList), position);
+    }
+
+    @MainThread
     public void load(List<MediaWrapper> mediaList, int position) {
         Log.v(TAG, "Loading position " + ((Integer) position).toString() + " in " + mediaList.toString());
 
@@ -1813,6 +1819,12 @@ public class PlaybackService extends Service implements IVLCVout.Callback {
     /**
      * Append to the current existing playlist
      */
+
+    @MainThread
+    public void append(MediaWrapper[] mediaList) {
+        append(Arrays.asList(mediaList));
+    }
+
     @MainThread
     public void append(List<MediaWrapper> mediaList) {
         if (!hasCurrentMedia())

@@ -14,6 +14,8 @@ import org.videolan.medialibrary.media.MediaWrapper;
 
 import java.io.File;
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Medialibrary {
 
@@ -28,7 +30,7 @@ public class Medialibrary {
 
     private MediaUpdatedCb mediaUpdatedCb = null;
     private MediaAddedCb mediaAddedCb = null;
-    private DevicesDiscoveryCb devicesDiscoveryCb = null;
+    private volatile List<DevicesDiscoveryCb> devicesDiscoveryCbList = new ArrayList<>();
 
     private static Medialibrary sInstance;
 
@@ -94,26 +96,30 @@ public class Medialibrary {
     }
 
     public void onDiscoveryStarted(String entryPoint) {
-        if (devicesDiscoveryCb != null)
-            devicesDiscoveryCb.onDiscoveryStarted(entryPoint);
+        if (!devicesDiscoveryCbList.isEmpty())
+            for (DevicesDiscoveryCb cb : devicesDiscoveryCbList)
+                cb.onDiscoveryStarted(entryPoint);
          Log.d(TAG, "onDiscoveryStarted: "+entryPoint);
     }
 
     public void onDiscoveryProgress(String entryPoint) {
-        if (devicesDiscoveryCb != null)
-            devicesDiscoveryCb.onDiscoveryProgress(entryPoint);
+        if (!devicesDiscoveryCbList.isEmpty())
+            for (DevicesDiscoveryCb cb : devicesDiscoveryCbList)
+                cb.onDiscoveryProgress(entryPoint);
          Log.d(TAG, "onDiscoveryProgress: "+entryPoint);
     }
 
     public void onDiscoveryCompleted(String entryPoint) {
-        if (devicesDiscoveryCb != null)
-            devicesDiscoveryCb.onDiscoveryCompleted(entryPoint);
+        if (!devicesDiscoveryCbList.isEmpty())
+            for (DevicesDiscoveryCb cb : devicesDiscoveryCbList)
+                cb.onDiscoveryCompleted(entryPoint);
          Log.d(TAG, "onDiscoveryCompleted: "+entryPoint);
     }
 
     public void onParsingStatsUpdated(int percent) {
-        if (devicesDiscoveryCb != null)
-            devicesDiscoveryCb.onParsingStatsUpdated(percent);
+        if (!devicesDiscoveryCbList.isEmpty())
+            for (DevicesDiscoveryCb cb : devicesDiscoveryCbList)
+                cb.onParsingStatsUpdated(percent);
          Log.d(TAG, "onParsingStatsUpdated: "+percent);
     }
 
@@ -137,8 +143,12 @@ public class Medialibrary {
         nativeSetMediaAddedCbFlag(flags);
     }
 
-    public void setDeviceDiscoveryCb(DevicesDiscoveryCb cb) {
-        this.devicesDiscoveryCb = cb;
+    public void addDeviceDiscoveryCb(DevicesDiscoveryCb cb) {
+        devicesDiscoveryCbList.add(cb);
+    }
+
+    public void removeDeviceDiscoveryCb(DevicesDiscoveryCb cb) {
+        devicesDiscoveryCbList.remove(cb);
     }
 
     public void removeMediaAddedCb() {

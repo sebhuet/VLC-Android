@@ -41,12 +41,10 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import org.videolan.vlc.media.MediaDatabase;
-import org.videolan.vlc.media.MediaLibrary;
 import org.videolan.medialibrary.media.MediaWrapper;
 import org.videolan.vlc.R;
 import org.videolan.vlc.VLCApplication;
-import org.videolan.vlc.gui.audio.AudioBrowserListAdapter;
+import org.videolan.vlc.media.MediaDatabase;
 
 import java.util.ArrayList;
 
@@ -62,7 +60,7 @@ public class SavePlaylistDialog extends DialogFragment implements AdapterView.On
     TextView mEmptyView;
     Button mSaveButton;
     Button mCancelButton;
-    AudioBrowserListAdapter mAdapter;
+//    AudioBrowserListAdapter mAdapter;
     ArrayList<MediaWrapper> mTracks;
     ArrayList<MediaWrapper> mNewTrack;
     Runnable mCallBack;
@@ -72,8 +70,8 @@ public class SavePlaylistDialog extends DialogFragment implements AdapterView.On
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mAdapter = new AudioBrowserListAdapter(getActivity(), AudioBrowserListAdapter.ITEM_WITHOUT_COVER);
-        mAdapter.addAllDBPlaylists(MediaLibrary.getInstance().getPlaylistDbItems());
+//        mAdapter = new AudioBrowserListAdapter(getActivity(), AudioBrowserListAdapter.ITEM_WITHOUT_COVER);
+//        mAdapter.addAllDBPlaylists(MediaLibrary.getInstance().getPlaylistDbItems());
         mTracks = getArguments().getParcelableArrayList(KEY_TRACKS);
         mNewTrack = getArguments().getParcelableArrayList(KEY_NEW_TRACKS);
     }
@@ -113,13 +111,13 @@ public class SavePlaylistDialog extends DialogFragment implements AdapterView.On
 
         mEditText.setOnEditorActionListener(this);
         mListView.setEmptyView(mEmptyView);
-        mListView.setAdapter(mAdapter);
+//        mListView.setAdapter(mAdapter);
         return view;
     }
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        mEditText.setText(mAdapter.getItem(position).mTitle);
+//        mEditText.setText(mAdapter.getItem(position).mTitle);
     }
 
     @Override

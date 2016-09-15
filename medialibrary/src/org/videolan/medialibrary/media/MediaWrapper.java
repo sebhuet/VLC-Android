@@ -35,7 +35,7 @@ import org.videolan.libvlc.util.Extensions;
 
 import java.util.Locale;
 
-public class MediaWrapper implements Parcelable {
+public class MediaWrapper extends MediaLibraryItem implements Parcelable {
     public final static String TAG = "VLC/MediaWrapper";
 
     public final static int TYPE_ALL = -1;
@@ -51,7 +51,8 @@ public class MediaWrapper implements Parcelable {
     public final static int MEDIA_PAUSED = 0x4;
     public final static int MEDIA_FORCE_AUDIO = 0x8;
 
-    long mId;
+    private static final StringBuilder sb = new StringBuilder();
+
     protected String mTitle;
     protected String mDisplayTitle;
     private String mArtist;
@@ -102,6 +103,18 @@ public class MediaWrapper implements Parcelable {
         mUri = Uri.parse(mrl);
         mId = id;
         init(time, length, type, null, title, artist, genre, album, albumArtist, width, height, artworkURL, audio, spu, trackNumber, discNumber, lastModified, null);
+        String artistMeta = getReferenceArtist();
+        boolean hasArtistMeta = !TextUtils.isEmpty(artistMeta);
+        sb.setLength(0);
+        if (!TextUtils.isEmpty(album)) {
+            sb.append(album);
+            if (hasArtistMeta)
+                sb.append(" - ");
+        }
+        if (hasArtistMeta)
+            sb.append(artistMeta);
+        if (sb.length() > 0)
+            mDescription = sb.toString();
     }
 
     /**
@@ -219,11 +232,11 @@ public class MediaWrapper implements Parcelable {
         mWidth = width;
         mHeight = height;
 
-        mTitle = title;
-        mArtist = artist;
-        mGenre = genre;
-        mAlbum = album;
-        mAlbumArtist = albumArtist;
+        mTitle = title != null ? title.trim() : null;
+        mArtist = artist != null ? artist.trim() : null;
+        mGenre = genre != null ? genre.trim() : null;
+        mAlbum = album != null ? album.trim() : null;
+        mAlbumArtist = albumArtist != null ? albumArtist.trim() : null;
         mArtworkURL = artworkURL;
         mTrackNumber = trackNumber;
         mDiscNumber = discNumber;
@@ -470,6 +483,10 @@ public class MediaWrapper implements Parcelable {
     }
 
     public String getArtworkURL() {
+        return mArtworkURL;
+    }
+
+    public String getArtworkMrl() {
         return mArtworkURL;
     }
 

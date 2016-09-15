@@ -372,7 +372,7 @@ public class AudioUtil {
         }
     }
 
-    private static Bitmap readCoverBitmap(String path, int dipWidth) {
+    public static Bitmap readCoverBitmap(String path, int dipWidth) {
         Bitmap cover = null;
         BitmapFactory.Options options = new BitmapFactory.Options();
         int width = UiTools.convertDpToPx(dipWidth);
@@ -392,7 +392,6 @@ public class AudioUtil {
             // Decode the file (with memory allocation this time)
             cover = BitmapFactory.decodeFile(path, options);
         }
-
         return cover;
     }
 

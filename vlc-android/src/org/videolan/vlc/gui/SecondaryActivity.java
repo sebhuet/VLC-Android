@@ -30,7 +30,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import org.videolan.medialibrary.Medialibrary;
-import org.videolan.medialibrary.media.MediaWrapper;
 import org.videolan.vlc.R;
 import org.videolan.vlc.VLCApplication;
 import org.videolan.vlc.gui.audio.AudioAlbumFragment;
@@ -43,8 +42,6 @@ import org.videolan.vlc.gui.video.MediaInfoFragment;
 import org.videolan.vlc.gui.video.VideoGridFragment;
 import org.videolan.vlc.gui.video.VideoListAdapter;
 import org.videolan.vlc.interfaces.ISortable;
-
-import java.util.ArrayList;
 
 public class SecondaryActivity extends AudioPlayerContainerActivity {
     public final static String TAG = "VLC/SecondaryActivity";
@@ -147,15 +144,15 @@ public class SecondaryActivity extends AudioPlayerContainerActivity {
 
     public void fetchSecondaryFragment(String id) {
         if (id.equals(ALBUMS_SONGS)) {
-            ArrayList<MediaWrapper> mediaList = (ArrayList<MediaWrapper>) VLCApplication.getData(ALBUMS_SONGS);
-            String filter = getIntent().getStringExtra(KEY_FILTER);
             mFragment = new AudioAlbumsSongsFragment();
-            ((AudioAlbumsSongsFragment) mFragment).setMediaList(mediaList, filter);
+            Bundle args = new Bundle();
+            args.putParcelable(AudioAlbumsSongsFragment.TAG_ITEM, getIntent().getParcelableExtra(AudioAlbumsSongsFragment.TAG_ITEM));
+            mFragment.setArguments(args);
         } else if(id.equals(ALBUM)) {
-            ArrayList<MediaWrapper> mediaList = (ArrayList<MediaWrapper>) VLCApplication.getData(ALBUM);
-            String filter = getIntent().getStringExtra(KEY_FILTER);
             mFragment = new AudioAlbumFragment();
-            ((AudioAlbumFragment) mFragment).setMediaList(mediaList, filter);
+            Bundle args = new Bundle();
+            args.putParcelable(AudioAlbumFragment.TAG_ITEM, getIntent().getParcelableExtra(AudioAlbumFragment.TAG_ITEM));
+            mFragment.setArguments(args);
         } else if(id.equals(EQUALIZER)) {
             mFragment = new EqualizerFragment();
         } else if(id.equals(ABOUT)) {

@@ -283,7 +283,7 @@ public class MainActivity extends AudioPlayerContainerActivity implements Device
           //Deactivated for now
 //        createExtensionServiceConnection();
 
-        mMediaLibrary.setDeviceDiscoveryCb(this);
+        mMediaLibrary.addDeviceDiscoveryCb(this);
         mNavigationView.setNavigationItemSelectedListener(this);
         clearBackstackFromClass(ExtensionBrowser.class);
     }
@@ -291,7 +291,7 @@ public class MainActivity extends AudioPlayerContainerActivity implements Device
     @Override
     protected void onStop() {
         super.onStop();
-        mMediaLibrary.setDeviceDiscoveryCb(null);
+        mMediaLibrary.removeDeviceDiscoveryCb(this);
         mNavigationView.setNavigationItemSelectedListener(null);
         if (mExtensionServiceConnection != null) {
             unbindService(mExtensionServiceConnection);

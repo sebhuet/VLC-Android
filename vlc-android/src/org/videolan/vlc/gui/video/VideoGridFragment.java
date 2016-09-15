@@ -48,6 +48,7 @@ import android.widget.TextView;
 import org.videolan.libvlc.Media;
 import org.videolan.libvlc.util.AndroidUtil;
 import org.videolan.medialibrary.Medialibrary;
+import org.videolan.medialibrary.interfaces.DevicesDiscoveryCb;
 import org.videolan.medialibrary.interfaces.MediaUpdatedCb;
 import org.videolan.medialibrary.media.MediaWrapper;
 import org.videolan.vlc.R;
@@ -72,7 +73,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class VideoGridFragment extends MediaBrowserFragment implements MediaUpdatedCb, ISortable, IVideoBrowser, SwipeRefreshLayout.OnRefreshListener {
+public class VideoGridFragment extends MediaBrowserFragment implements MediaUpdatedCb, ISortable, IVideoBrowser, SwipeRefreshLayout.OnRefreshListener, DevicesDiscoveryCb {
 
     public final static String TAG = "VLC/VideoListFragment";
 
@@ -170,6 +171,8 @@ public class VideoGridFragment extends MediaBrowserFragment implements MediaUpda
             mMainActivity = (MainActivity) getActivity();
         mMediaLibrary.nativeResumeBackgroundOperations();
         final boolean isWorking = mMediaLibrary.isWorking();
+        if (isWorking)
+            mMediaLibrary.addDeviceDiscoveryCb(this);
         final boolean refresh = mVideoAdapter.isEmpty() && !isWorking;
         // We don't animate while medialib is scanning. Because gridview is being populated.
         // That would lead to graphical glitches
@@ -502,8 +505,9 @@ public class VideoGridFragment extends MediaBrowserFragment implements MediaUpda
 
     @Override
     public void onRefresh() {
-        if (getActivity()!=null && !Medialibrary.getInstance(VLCApplication.getAppContext()).isWorking())
+        if (getActivity()!=null && !Medialibrary.getInstance(VLCApplication.getAppContext()).isWorking()) {
             Medialibrary.getInstance(VLCApplication.getAppContext()).nativeReload();
+        }
     }
 
     @Override
@@ -541,4 +545,24 @@ public class VideoGridFragment extends MediaBrowserFragment implements MediaUpda
             }
         }
     }
+
+    @Override
+    public void onDiscoveryStarted(String entryPoint) {}
+
+    @Override
+    public void onDiscoveryProgress(String entryPoint) {}
+
+    @Override
+    public void onDiscoveryCompleted(String entryPoint) {
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                mSwipeRefreshLayout.setRefreshing(false);
+            }
+        });
+        mMediaLibrary.removeDeviceDiscoveryCb(VideoGridFragment.this);
+    }
+
+    @Override
+    public void onParsingStatsUpdated(int percent) {}
 }

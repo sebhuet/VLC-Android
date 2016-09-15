@@ -17,7 +17,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-            <ListView
+            <android.support.v7.widget.RecyclerView
                 android:id="@+id/albums"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
@@ -32,7 +32,7 @@
                 android:nextFocusRight="@id/albums"
                 style="@style/Theme.VLC.List" />
 
-            <ListView
+            <android.support.v7.widget.RecyclerView
                 android:id="@+id/songs"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"

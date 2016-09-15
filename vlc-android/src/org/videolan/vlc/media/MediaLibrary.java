@@ -31,11 +31,10 @@ import android.util.Log;
 
 import org.videolan.libvlc.LibVLC;
 import org.videolan.libvlc.Media;
-import org.videolan.medialibrary.media.MediaWrapper;
 import org.videolan.libvlc.util.AndroidUtil;
 import org.videolan.libvlc.util.Extensions;
+import org.videolan.medialibrary.media.MediaWrapper;
 import org.videolan.vlc.VLCApplication;
-import org.videolan.vlc.gui.audio.AudioBrowserListAdapter;
 import org.videolan.vlc.interfaces.IBrowser;
 import org.videolan.vlc.util.AndroidDevices;
 import org.videolan.vlc.util.VLCInstance;
@@ -203,23 +202,23 @@ public class MediaLibrary {
         return playlistItems;
     }
 
-    public ArrayList<AudioBrowserListAdapter.ListItem> getPlaylistDbItems() {
-        ArrayList<AudioBrowserListAdapter.ListItem> playlistItems = new ArrayList<>();
-        AudioBrowserListAdapter.ListItem playList;
-        MediaDatabase db = MediaDatabase.getInstance();
-        String[] items, playlistNames = db.getPlaylists();
-        for (String playlistName : playlistNames){
-            items = db.playlistGetItems(playlistName);
-            if (items == null)
-                continue;
-            playList = new AudioBrowserListAdapter.ListItem(playlistName, null, null, false, null);
-            for (String track : items){
-                playList.mMediaList.add(new MediaWrapper(AndroidUtil.LocationToUri(track)));
-            }
-            playlistItems.add(playList);
-        }
-        return playlistItems;
-    }
+//    public ArrayList<AudioBrowserListAdapter.ListItem> getPlaylistDbItems() {
+//        ArrayList<AudioBrowserListAdapter.ListItem> playlistItems = new ArrayList<>();
+//        AudioBrowserListAdapter.ListItem playList;
+//        MediaDatabase db = MediaDatabase.getInstance();
+//        String[] items, playlistNames = db.getPlaylists();
+//        for (String playlistName : playlistNames){
+//            items = db.playlistGetItems(playlistName);
+//            if (items == null)
+//                continue;
+//            playList = new AudioBrowserListAdapter.ListItem(playlistName, null, null, false, null);
+//            for (String track : items){
+//                playList.mMediaList.add(new MediaWrapper(AndroidUtil.LocationToUri(track)));
+//            }
+//            playlistItems.add(playList);
+//        }
+//        return playlistItems;
+//    }
 
     public ArrayList<MediaWrapper> getMediaItems() {
         return mItemList;
