@@ -7,6 +7,7 @@
 #include <medialibrary/IArtist.h>
 #include <medialibrary/IGenre.h>
 #include <medialibrary/IAlbum.h>
+#include <medialibrary/IPlaylist.h>
 #define LOG_TAG "VLC/JNI/Utils"
 #include "log.h"
 
@@ -103,11 +104,21 @@ convertArtistObject(JNIEnv* env, fields *fields, medialibrary::ArtistPtr const& 
 }
 
 jobject
-convertGenreOgbject(JNIEnv* env, fields *fields, medialibrary::GenrePtr const& genrePtr)
+convertGenreObject(JNIEnv* env, fields *fields, medialibrary::GenrePtr const& genrePtr)
 {
     jstring name = env->NewStringUTF(genrePtr->name().c_str());
     jobject item = env->NewObject(fields->Genre.clazz, fields->Genre.initID,
                           (jlong) genrePtr->id(), name);
+    env->DeleteLocalRef(name);
+    return item;
+}
+
+jobject
+convertPlaylistObject(JNIEnv* env, fields *fields, medialibrary::PlaylistPtr const& playlistPtr)
+{
+    jstring name = env->NewStringUTF(playlistPtr->name().c_str());
+    jobject item = env->NewObject(fields->Playlist.clazz, fields->Playlist.initID,
+                          (jlong) playlistPtr->id(), name);
     env->DeleteLocalRef(name);
     return item;
 }

@@ -6,7 +6,6 @@ import android.os.Parcelable;
 import org.videolan.medialibrary.Medialibrary;
 
 public class Album extends MediaLibraryItem {
-    private String title;
     private int releaseYear;
     private String artworkMrl;
     private String albumArtist;
@@ -14,9 +13,8 @@ public class Album extends MediaLibraryItem {
     private int nbTracks;
     private int duration;
 
-    public Album(long mId, String title, int releaseYear, String artworkMrl, String albumArtist, long albumArtistId, int nbTracks, int duration) {
-        this.mId = mId;
-        this.title = title;
+    public Album(long id, String title, int releaseYear, String artworkMrl, String albumArtist, long albumArtistId, int nbTracks, int duration) {
+        super(id, title);
         this.releaseYear = releaseYear;
         this.artworkMrl = artworkMrl;
         this.albumArtist = albumArtist != null ? albumArtist.trim(): null;
@@ -27,10 +25,6 @@ public class Album extends MediaLibraryItem {
 
     public long getId() {
         return mId;
-    }
-
-    public String getTitle() {
-        return title;
     }
 
     @Override
@@ -67,8 +61,7 @@ public class Album extends MediaLibraryItem {
 
     @Override
     public void writeToParcel(Parcel parcel, int i) {
-        parcel.writeLong(mId);
-        parcel.writeString(title);
+        super.writeToParcel(parcel, i);
         parcel.writeInt(releaseYear);
         parcel.writeString(artworkMrl);
         parcel.writeString(albumArtist);
@@ -89,8 +82,7 @@ public class Album extends MediaLibraryItem {
     };
 
     private Album(Parcel in) {
-        this.mId = in.readLong();
-        this.title = in.readString();
+        super(in);
         this.releaseYear = in.readInt();
         this.artworkMrl = in.readString();
         this.albumArtist = in.readString();

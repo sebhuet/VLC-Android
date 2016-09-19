@@ -14,6 +14,7 @@
 #include <medialibrary/IAlbum.h>
 #include <medialibrary/IArtist.h>
 #include <medialibrary/IGenre.h>
+#include <medialibrary/IPlaylist.h>
 #include <medialibrary/Types.h>
 #include <medialibrary/IDeviceLister.h>
 #include <medialibrary/IMedia.h>
@@ -43,12 +44,21 @@ public:
     std::vector<medialibrary::AlbumPtr> albums();
     std::vector<medialibrary::ArtistPtr> artists();
     std::vector<medialibrary::GenrePtr> genres();
+    std::vector<medialibrary::PlaylistPtr> playlists();
+    medialibrary::PlaylistPtr playlist( int64_t playlistId );
+    medialibrary::PlaylistPtr PlaylistCreate( const std::string &name );
     std::vector<medialibrary::MediaPtr> tracksFromAlbum( int64_t albumId );
     std::vector<medialibrary::MediaPtr> mediaFromArtist( int64_t artistId );
     std::vector<medialibrary::AlbumPtr> albumsFromArtist( int64_t artistId );
     std::vector<medialibrary::MediaPtr> mediaFromGenre( int64_t genreId );
     std::vector<medialibrary::AlbumPtr> albumsFromGenre( int64_t genreId );
     std::vector<medialibrary::ArtistPtr> artistsFromGenre( int64_t genreId );
+    std::vector<medialibrary::MediaPtr> mediaFromPlaylist( int64_t playlistId );
+    bool playlistAppend(int64_t playlistId, int64_t mediaId);
+    bool playlistAdd(int64_t playlistId, int64_t mediaId, unsigned int position);
+    bool playlistMove(int64_t playlistId, int64_t mediaId, unsigned int position);
+    bool playlistRemove(int64_t playlistId, int64_t mediaId);
+    bool PlaylistDelete( int64_t playlistId );
 
 
     void onMediaAdded( std::vector<medialibrary::MediaPtr> media );

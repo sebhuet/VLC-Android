@@ -7,19 +7,8 @@ import org.videolan.medialibrary.Medialibrary;
 
 public class Genre extends MediaLibraryItem {
 
-    private String name;
-
-    public Genre(long mId, String name) {
-        this.mId = mId;
-        this.name = name;
-    }
-
-    public long getId() {
-        return mId;
-    }
-
-    public String getTitle() {
-        return name;
+    public Genre(long id, String title) {
+        super(id, title);
     }
 
     public Album[] getAlbums(Medialibrary ml) {
@@ -38,12 +27,6 @@ public class Genre extends MediaLibraryItem {
     private native Artist[] nativeGetArtistsFromGenre(Medialibrary ml, long mId);
     private native MediaWrapper[] nativeGetTracksFromGenre(Medialibrary ml, long mId);
 
-    @Override
-    public void writeToParcel(Parcel parcel, int i) {
-        parcel.writeLong(mId);
-        parcel.writeString(name);
-    }
-
     public static Parcelable.Creator<Genre> CREATOR
             = new Parcelable.Creator<Genre>() {
         public Genre createFromParcel(Parcel in) {
@@ -54,9 +37,7 @@ public class Genre extends MediaLibraryItem {
             return new Genre[size];
         }
     };
-
-    private Genre(Parcel in) {
-        this.mId = in.readLong();
-        this.name = in.readString();
+    public Genre(Parcel in) {
+        super(in);
     }
 }

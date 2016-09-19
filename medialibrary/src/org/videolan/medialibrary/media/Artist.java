@@ -7,25 +7,15 @@ import org.videolan.medialibrary.Medialibrary;
 
 public class Artist extends MediaLibraryItem {
 
-    private String name;
     private String shortBio;
     private String artworkMrl;
     private String musicBrainzId;
 
-    public Artist(long mId, String name, String shortBio, String artworkMrl, String musicBrainzId) {
-        this.mId = mId;
-        this.name = name;
+    public Artist(long id, String name, String shortBio, String artworkMrl, String musicBrainzId) {
+        super(id, name);
         this.shortBio = shortBio;
         this.artworkMrl = artworkMrl;
         this.musicBrainzId = musicBrainzId;
-    }
-
-    public long getId() {
-        return mId;
-    }
-
-    public String getTitle() {
-        return name;
     }
 
     public String getShortBio() {
@@ -40,10 +30,6 @@ public class Artist extends MediaLibraryItem {
         return musicBrainzId;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
     public void setShortBio(String shortBio) {
         this.shortBio = shortBio;
     }
@@ -56,7 +42,7 @@ public class Artist extends MediaLibraryItem {
         return nativeGetAlbumsFromArtist(ml, mId);
     }
 
-    public MediaWrapper[] getMedia(Medialibrary ml) {
+    public MediaWrapper[] getTracks(Medialibrary ml) {
         return nativeGetMediaFromArtist(ml, mId);
     }
 
@@ -65,8 +51,7 @@ public class Artist extends MediaLibraryItem {
 
     @Override
     public void writeToParcel(Parcel parcel, int i) {
-        parcel.writeLong(mId);
-        parcel.writeString(name);
+        super.writeToParcel(parcel, i);
         parcel.writeString(shortBio);
         parcel.writeString(artworkMrl);
         parcel.writeString(musicBrainzId);
@@ -84,8 +69,7 @@ public class Artist extends MediaLibraryItem {
     };
 
     private Artist(Parcel in) {
-        this.mId = in.readLong();
-        this.name = in.readString();
+        super(in);
         this.shortBio = in.readString();
         this.artworkMrl = in.readString();
         this.musicBrainzId = in.readString();

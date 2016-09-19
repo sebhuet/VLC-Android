@@ -32,6 +32,7 @@ import org.videolan.libvlc.Media.Meta;
 import org.videolan.libvlc.Media.VideoTrack;
 import org.videolan.libvlc.MediaPlayer;
 import org.videolan.libvlc.util.Extensions;
+import org.videolan.medialibrary.Medialibrary;
 
 import java.util.Locale;
 
@@ -53,7 +54,6 @@ public class MediaWrapper extends MediaLibraryItem implements Parcelable {
 
     private static final StringBuilder sb = new StringBuilder();
 
-    protected String mTitle;
     protected String mDisplayTitle;
     private String mArtist;
     private String mGenre;
@@ -95,6 +95,7 @@ public class MediaWrapper extends MediaLibraryItem implements Parcelable {
     public MediaWrapper(long id, String mrl, long time, long length, int type,
                       String title, String artist, String genre, String album, String albumArtist, int width,
                       int height, String artworkURL, int audio, int spu, int trackNumber, int discNumber, long lastModified) {
+        super();
         if (TextUtils.isEmpty(mrl))
             throw new IllegalArgumentException("uri was empty");
 
@@ -122,6 +123,7 @@ public class MediaWrapper extends MediaLibraryItem implements Parcelable {
      * @param uri Should not be null.
      */
     public MediaWrapper(Uri uri) {
+        super();
         if (uri == null)
             throw new NullPointerException("uri was null");
 
@@ -134,6 +136,7 @@ public class MediaWrapper extends MediaLibraryItem implements Parcelable {
      * @param media should be parsed and not NULL
      */
     public MediaWrapper(Media media) {
+        super();
         if (media == null)
             throw new NullPointerException("media was null");
 
@@ -250,6 +253,11 @@ public class MediaWrapper extends MediaLibraryItem implements Parcelable {
         mUri = uri;
         init(time, length, type, picture, title, artist, genre, album, albumArtist,
              width, height, artworkURL, audio, spu, trackNumber, discNumber, lastModified, null);
+    }
+
+    @Override
+    public MediaWrapper[] getTracks(Medialibrary ml) {
+        return new MediaWrapper[] {this};
     }
 
     public long getId() {
@@ -529,12 +537,13 @@ public class MediaWrapper extends MediaLibraryItem implements Parcelable {
     }
 
     public MediaWrapper(Parcel in) {
+        super(in);
         mUri = in.readParcelable(Uri.class.getClassLoader());
         init(in.readLong(),
                 in.readLong(),
                 in.readInt(),
                 (Bitmap) in.readParcelable(Bitmap.class.getClassLoader()),
-                in.readString(),
+                mTitle,
                 in.readString(),
                 in.readString(),
                 in.readString(),
@@ -552,12 +561,12 @@ public class MediaWrapper extends MediaLibraryItem implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
+        super.writeToParcel(dest, flags);
         dest.writeParcelable(mUri, flags);
         dest.writeLong(getTime());
         dest.writeLong(getLength());
         dest.writeInt(getType());
         dest.writeParcelable(getPicture(), flags);
-        dest.writeString(getTitle());
         dest.writeString(getArtist());
         dest.writeString(getGenre());
         dest.writeString(getAlbum());

@@ -3,30 +3,22 @@ package org.videolan.medialibrary.media;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import org.videolan.medialibrary.Medialibrary;
+
 public class DummyItem extends MediaLibraryItem {
 
-    String title;
-
     public DummyItem(String title) {
-        this.title = title;
+        super(0, title);
     }
 
     @Override
-    public long getId() {
-        return 0;
-    }
-
-    public void setId(long id) {
-        mId = id;
-    }
-    @Override
-    public String getTitle() {
-        return title;
+    public MediaWrapper[] getTracks(Medialibrary ml) {
+        return new MediaWrapper[0];
     }
 
     @Override
     public void writeToParcel(Parcel parcel, int i) {
-        parcel.writeString(title);
+        super.writeToParcel(parcel, i);
     }
 
     public static Parcelable.Creator<DummyItem> CREATOR
@@ -40,7 +32,7 @@ public class DummyItem extends MediaLibraryItem {
         }
     };
 
-    private DummyItem(Parcel in) {
-        this.title = in.readString();
+    public DummyItem(Parcel in) {
+        super(in);
     }
 }

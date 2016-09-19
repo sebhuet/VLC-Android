@@ -11,6 +11,7 @@ import org.videolan.medialibrary.media.Album;
 import org.videolan.medialibrary.media.Artist;
 import org.videolan.medialibrary.media.Genre;
 import org.videolan.medialibrary.media.MediaWrapper;
+import org.videolan.medialibrary.media.Playlist;
 
 import java.io.File;
 import java.net.URI;
@@ -167,6 +168,9 @@ public class Medialibrary {
     public native Album[] nativeGetAlbums();
     public native Artist[] nativeGetArtists();
     public native Genre[] nativeGetGenres();
+    public native Playlist[] nativeGetPlaylists();
+    public native Playlist nativeGetPlaylist(long playlistId);
+    public native Playlist nativePlaylistCreate(String name);
     public native int nativeGetVideoCount();
     public native int nativeGetAudioCount();
     public native  boolean nativeIsWorking();

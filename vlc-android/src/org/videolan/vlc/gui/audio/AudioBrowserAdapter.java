@@ -185,11 +185,12 @@ public class AudioBrowserAdapter extends RecyclerView.Adapter<AudioBrowserAdapte
             this.vdb = vdb;
         }
     }
-    public class MediaItemViewHolder extends ViewHolder {
+    public class MediaItemViewHolder extends ViewHolder implements View.OnLongClickListener {
 
         public MediaItemViewHolder(AudioBrowserItemBinding binding) {
             super(binding);
             binding.setHolder(this);
+            itemView.setOnLongClickListener(this);
         }
 
         public void onClick(View v) {
@@ -200,6 +201,12 @@ public class AudioBrowserAdapter extends RecyclerView.Adapter<AudioBrowserAdapte
         public void onMoreClick(View v) {
             if (mClickHandler != null)
                 mClickHandler.onCtxClick(v, getLayoutPosition(), ((AudioBrowserItemBinding)vdb).getItem());
+        }
+
+        @Override
+        public boolean onLongClick(View view) {
+            onMoreClick(view);
+            return true;
         }
     }
 }

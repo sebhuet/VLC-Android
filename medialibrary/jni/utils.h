@@ -64,6 +64,10 @@ struct fields {
         jclass clazz;
         jmethodID initID;
     } Genre;
+    struct Playlist {
+        jclass clazz;
+        jmethodID initID;
+    } Playlist;
     struct MediaWrapper {
         jclass clazz;
         jmethodID initID;
@@ -73,6 +77,7 @@ struct fields {
 jobject mediaToMediaWrapper(JNIEnv*, fields*, const medialibrary::MediaPtr &);
 jobject convertAlbumObject(JNIEnv* env, fields *fields, medialibrary::AlbumPtr const& albumPtr);
 jobject convertArtistObject(JNIEnv* env, fields *fields, medialibrary::ArtistPtr const& artistPtr);
-jobject convertGenreOgbject(JNIEnv* env, fields *fields, medialibrary::GenrePtr const& genrePtr);
+jobject convertGenreObject(JNIEnv* env, fields *fields, medialibrary::GenrePtr const& genrePtr);
+jobject convertPlaylistObject(JNIEnv* env, fields *fields, medialibrary::PlaylistPtr const& genrePtr);
 
 #endif //VLC_MEDIALIB_UTILS_H

@@ -270,7 +270,7 @@ public class AudioAlbumsSongsFragment extends PlaybackServiceFragment implements
                 final MediaWrapper[] songs;
                 if (mItem instanceof Artist) {
                     albums = ((Artist) mItem).getAlbums(mMediaLibrary);
-                    songs = ((Artist) mItem).getMedia(mMediaLibrary);
+                    songs = ((Artist) mItem).getTracks(mMediaLibrary);
                 } else
                     return;
                 mSongsAdapter.addAll(songs);

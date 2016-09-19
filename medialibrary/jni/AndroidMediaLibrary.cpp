@@ -182,6 +182,30 @@ AndroidMediaLibrary::genres()
     }
 }
 
+std::vector<medialibrary::PlaylistPtr>
+AndroidMediaLibrary::playlists()
+{
+    try {
+        return p_ml->playlists();
+    } catch (const std::exception& e) {
+        LOGE("fail %s", e.what());
+        std::vector<medialibrary::PlaylistPtr> vector;
+        return vector;
+    }
+}
+
+medialibrary::PlaylistPtr
+AndroidMediaLibrary::playlist( int64_t playlistId )
+{
+    return p_ml->playlist(playlistId);
+}
+
+medialibrary::PlaylistPtr
+AndroidMediaLibrary::PlaylistCreate( const std::string &name )
+{
+    return p_ml->createPlaylist(name);
+}
+
 std::vector<medialibrary::MediaPtr>
 AndroidMediaLibrary::tracksFromAlbum( int64_t albumId )
 {
@@ -251,6 +275,61 @@ AndroidMediaLibrary::artistsFromGenre( int64_t genreId )
         LOGE("fail %s", e.what());
         std::vector<medialibrary::ArtistPtr> vector;
         return vector;
+    }
+}
+
+std::vector<medialibrary::MediaPtr>
+AndroidMediaLibrary::mediaFromPlaylist( int64_t playlistId )
+{
+    try {
+        return p_ml->playlist(playlistId)->media();
+    } catch (const std::exception& e) {
+        LOGE("fail %s", e.what());
+        std::vector<medialibrary::MediaPtr> vector;
+        return vector;
+    }
+}
+
+bool
+AndroidMediaLibrary::playlistAppend(int64_t playlistId, int64_t mediaId) {
+    medialibrary::PlaylistPtr playlist = p_ml->playlist(playlistId);
+    if (playlist == nullptr)
+        return false;
+    return playlist->append(mediaId);
+}
+
+bool
+AndroidMediaLibrary::playlistAdd(int64_t playlistId, int64_t mediaId, unsigned int position) {
+    medialibrary::PlaylistPtr playlist = p_ml->playlist(playlistId);
+    if (playlist == nullptr)
+        return false;
+    return playlist->add(mediaId, position);
+}
+
+bool
+AndroidMediaLibrary::playlistMove(int64_t playlistId, int64_t mediaId, unsigned int position) {
+    medialibrary::PlaylistPtr playlist = p_ml->playlist(playlistId);
+    if (playlist == nullptr)
+        return false;
+    return playlist->move(mediaId, position);
+}
+
+bool
+AndroidMediaLibrary::playlistRemove(int64_t playlistId, int64_t mediaId) {
+    medialibrary::PlaylistPtr playlist = p_ml->playlist(playlistId);
+    if (playlist == nullptr)
+        return false;
+    return playlist->remove(mediaId);
+}
+
+bool
+AndroidMediaLibrary::PlaylistDelete( int64_t playlistId )
+{
+    try {
+        return p_ml->deletePlaylist(playlistId);
+    } catch (const std::exception& e) {
+        LOGE("fail %s", e.what());
+        return false;
     }
 }
 
