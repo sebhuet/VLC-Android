@@ -64,6 +64,7 @@ import org.videolan.vlc.gui.SecondaryActivity;
 import org.videolan.vlc.gui.browser.MediaBrowserFragment;
 import org.videolan.vlc.gui.helpers.AudioUtil;
 import org.videolan.vlc.gui.helpers.UiTools;
+import org.videolan.vlc.gui.video.MediaInfoFragment;
 import org.videolan.vlc.gui.view.SwipeRefreshLayout;
 import org.videolan.vlc.interfaces.IBrowser;
 import org.videolan.vlc.media.MediaDatabase;
@@ -505,8 +506,8 @@ public class AudioBrowserFragment extends MediaBrowserFragment implements Device
 
         if (id == R.id.audio_view_info) {
                 Intent i = new Intent(getActivity(), SecondaryActivity.class);
-                i.putExtra("fragment", "mediaInfo");
-                i.putExtra("param", ((MediaWrapper)mSongsAdapter.getItem(position)).getUri().toString());
+                i.putExtra(SecondaryActivity.KEY_FRAGMENT, SecondaryActivity.MEDIA_INFO);
+                i.putExtra(MediaInfoFragment.ITEM_KEY, mSongsAdapter.getItem(position));
                 getActivity().startActivityForResult(i, MainActivity.ACTIVITY_RESULT_SECONDARY);
                 return true;
         }

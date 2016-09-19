@@ -20,7 +20,6 @@
 
 package org.videolan.vlc.gui.audio;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -41,7 +40,6 @@ import android.view.ViewGroup;
 import org.videolan.medialibrary.Medialibrary;
 import org.videolan.medialibrary.media.Album;
 import org.videolan.medialibrary.media.Artist;
-import org.videolan.medialibrary.media.Genre;
 import org.videolan.medialibrary.media.MediaLibraryItem;
 import org.videolan.medialibrary.media.MediaWrapper;
 import org.videolan.vlc.R;
@@ -52,13 +50,12 @@ import org.videolan.vlc.gui.SecondaryActivity;
 import org.videolan.vlc.gui.dialogs.SavePlaylistDialog;
 import org.videolan.vlc.gui.helpers.AudioUtil;
 import org.videolan.vlc.gui.helpers.UiTools;
+import org.videolan.vlc.gui.video.MediaInfoFragment;
 import org.videolan.vlc.gui.view.SwipeRefreshLayout;
-import org.videolan.vlc.media.MediaDatabase;
 import org.videolan.vlc.media.MediaUtils;
 import org.videolan.vlc.util.AndroidDevices;
 import org.videolan.vlc.util.FileUtils;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -221,11 +218,11 @@ public class AudioAlbumsSongsFragment extends PlaybackServiceFragment implements
         }
 
         if (id == R.id.audio_view_info) {
-                Intent i = new Intent(getActivity(), SecondaryActivity.class);
-                i.putExtra("fragment", "mediaInfo");
-                i.putExtra("param", ((MediaWrapper)mediaItem).getUri().toString());
-                getActivity().startActivityForResult(i, MainActivity.ACTIVITY_RESULT_SECONDARY);
-                return true;
+            Intent i = new Intent(getActivity(), SecondaryActivity.class);
+            i.putExtra(SecondaryActivity.KEY_FRAGMENT, SecondaryActivity.MEDIA_INFO);
+            i.putExtra(MediaInfoFragment.ITEM_KEY, mediaItem);
+            getActivity().startActivityForResult(i, MainActivity.ACTIVITY_RESULT_SECONDARY);
+            return true;
         }
 
         if (id == R.id .audio_view_add_playlist) {

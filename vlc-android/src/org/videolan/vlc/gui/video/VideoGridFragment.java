@@ -20,7 +20,6 @@
 
 package org.videolan.vlc.gui.video;
 
-import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -300,15 +299,10 @@ public class VideoGridFragment extends MediaBrowserFragment implements MediaUpda
                 MediaUtils.openList(getActivity(), playList, position+offset);
                 return true;
             case R.id.video_list_info:
-                Activity activity = getActivity();
-                if (activity instanceof MainActivity)
-                    ((MainActivity)activity).showSecondaryFragment(SecondaryActivity.MEDIA_INFO, media.getLocation());
-                else {
-                    Intent i = new Intent(activity, SecondaryActivity.class);
-                    i.putExtra("fragment", "mediaInfo");
-                    i.putExtra("param", media.getLocation());
-                    startActivityForResult(i, SecondaryActivity.ACTIVITY_RESULT_SECONDARY);
-                }
+                Intent i = new Intent(getActivity(), SecondaryActivity.class);
+                i.putExtra(SecondaryActivity.KEY_FRAGMENT, SecondaryActivity.MEDIA_INFO);
+                i.putExtra(MediaInfoFragment.ITEM_KEY, media);
+                startActivityForResult(i, SecondaryActivity.ACTIVITY_RESULT_SECONDARY);
                 return true;
             case R.id.video_list_delete:
                 mVideoAdapter.remove(position);

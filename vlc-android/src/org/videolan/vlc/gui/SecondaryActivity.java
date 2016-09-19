@@ -159,7 +159,9 @@ public class SecondaryActivity extends AudioPlayerContainerActivity {
             mFragment = new AboutFragment();
         } else if(id.equals(MEDIA_INFO)) {
             mFragment = new MediaInfoFragment();
-            ((MediaInfoFragment)mFragment).setMediaLocation(getIntent().getStringExtra("param"));
+            Bundle args = new Bundle();
+            args.putParcelable(MediaInfoFragment.ITEM_KEY, getIntent().getParcelableExtra(MediaInfoFragment.ITEM_KEY));
+            mFragment.setArguments(args);
         } else if(id.equals(VIDEO_GROUP_LIST)) {
             mFragment = new VideoGridFragment();
             ((VideoGridFragment) mFragment).setGroup(getIntent().getStringExtra("param"));

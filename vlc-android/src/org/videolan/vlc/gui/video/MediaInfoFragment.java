@@ -44,6 +44,7 @@ import org.videolan.libvlc.LibVLC;
 import org.videolan.libvlc.Media;
 import org.videolan.libvlc.util.Extensions;
 import org.videolan.libvlc.util.VLCUtil;
+import org.videolan.medialibrary.media.MediaWrapper;
 import org.videolan.vlc.R;
 import org.videolan.vlc.VLCApplication;
 import org.videolan.vlc.gui.helpers.AudioUtil;
@@ -51,9 +52,7 @@ import org.videolan.vlc.gui.helpers.BitmapUtil;
 import org.videolan.vlc.gui.helpers.UiTools;
 import org.videolan.vlc.gui.preferences.PreferencesActivity;
 import org.videolan.vlc.media.MediaDatabase;
-import org.videolan.vlc.media.MediaLibrary;
 import org.videolan.vlc.media.MediaUtils;
-import org.videolan.medialibrary.media.MediaWrapper;
 import org.videolan.vlc.util.FileUtils;
 import org.videolan.vlc.util.Strings;
 import org.videolan.vlc.util.VLCInstance;
@@ -87,8 +86,9 @@ public class MediaInfoFragment extends ListFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (savedInstanceState != null)
-            mItem = savedInstanceState.getParcelable(ITEM_KEY);
+        mItem = (MediaWrapper) (savedInstanceState != null ?
+                savedInstanceState.getParcelable(ITEM_KEY) :
+                getArguments().getParcelable(ITEM_KEY));
     }
 
     @Override
@@ -162,12 +162,6 @@ public class MediaInfoFragment extends ListFragment {
     public void onDestroy() {
         super.onDestroy();
         mHandler = null;
-    }
-
-    public void setMediaLocation(String MRL) {
-        if (MRL == null)
-            return;
-        mItem = MediaLibrary.getInstance().getMediaItem(MRL);
     }
 
     CheckFileTask mCheckFileTask = null;
