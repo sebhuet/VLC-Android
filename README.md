@@ -1,30 +1,46 @@
 # VLC for Android
-This is the official Android port of VLC.
+=================
+This a clone of the official [Android port of VLC](https://code.videolan.org/videolan/vlc-android)
 
-## License
-VLC for Android is licensed under GPLv3
+## Build with UBUNTU 16.04LTS
+=============================
 
-## Build
+Install dev tools:
+------------------
+///
+sudo apt-get install autoconf automake ant libtool patch pkg-config protobuf-compiler ragel subversion unzip git autopoint cmake build-essential curl g++
+///
 
-You will need a recent Linux distribution to build VLC.
-It should work with Windows 10, but no official support for this.
+VLC requires protobuf v3
 
-Check our [AndroidCompile wiki page](https://wiki.videolan.org/AndroidCompile/)
+get it from https://github.com/google/protobuf/tree/3.0.x/src
 
-## Contribute
+and apply the following
 
-VLC is a libre and open source project, we welcome all contributions.
+./autogen.sh
+./configure
+make
+make check
+sudo make install
+sudo ldconfig
 
-Check [our wiki page on how to send patches](https://wiki.videolan.org/Sending_Patches_VLC/)  
-Send them to the android mailing list: android@videolan.org, not vlc-devel.
+Install Android SDK & NDK
+-------------------------
+sudo add-apt-repository ppa:ubuntu-desktop/ubuntu-make
+sudo apt update
+sudo apt install ubuntu-make
+sudo umake android android-ndk
 
-### Translations:  
-You can help improving translations too by joining the [transifex vlc project](https://www.transifex.com/yaron/vlc-trans/dashboard/)
+Update some env vars
+--------------------
+edit /etc/profile or /etc/environment to add:
+export ANDROID_SDK=/opt/Android/SDK (check it)
+export ANDROID_NDK=/opt/Android/NDK/ndk
+export PATH=$PATH:$ANDROID_SDK/platform-tools
+export PATH=$PATH:$ANDROID_SDK/tools
 
-## LibVLC
-You can use our LibVLC module to power your own Android media player.You can have a look at our  [sample codes](https://code.videolan.org/videolan/libvlc-android-samples).
+clone this repository
+---------------------
+git clone https://github.com/sebhuet/VLC-Android.git
 
-## support
-
-- Android mailing list: android@videolan.org
-- IRC: *#videolan* channel on [freenode](http://freenode.net/)
+then launch compile.sh -a (your arch / edit compile.sh to find yours)
